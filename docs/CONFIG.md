@@ -51,7 +51,7 @@ capacity of 10Gbpi, we would use: `jupiter-4-6-8-10-10000000000`.
 
 Gpbi is the number of bits that a link can pass per traffic matrix interval, as
 discussed in the previous attribute (mop-duration).
-
+两次实验中间可以传递的流量？
 
 ## [failure]
 `concurrent-switch-failure`: Maximum number of concurrent switch failures to

@@ -1,0 +1,20 @@
+  _   _      _  ______ _____ 
+ | \ | |    | | | ___ \  ___|
+ |  \| | ___| |_| |_/ / |__  
+ | . ` |/ _ \ __|    /|  __| 
+ | |\  |  __/ |_| |\ \| |___ 
+ \_| \_/\___|\__\_| \_\____/ 
+  A Network Risk Estimator   
+
+
+func_name: stepped
+define step cost func
+add freedom degree: 8-8 degree: 2
+going to exec
+going to validate
+validate finished
+nthread: 10
+maybe get output
+haven get output
+Statistics - len: 3.000000 (0.000000), cost: 0.000000 (0.000000)
+time=17.255370

@@ -60,11 +60,14 @@ inline static uint32_t _num_active_aggs_jupiter(
   uint32_t active_aggs = 0;
   uint32_t agg_count = jup->agg;
   struct switch_stats_t *base = jup->agg_ptr + pod * agg_count;
+  
   for (struct switch_stats_t *agg = base; agg != base + agg_count; ++agg) {
+    //printf("%d ",agg->id);
     if (agg->stat == UP) {
       active_aggs += 1;
     }
   }
+  //printf("active agg pod: %d\n",pod);
   return active_aggs;
 }
 
@@ -153,10 +156,11 @@ uint32_t static _setup_bandwidth_for_flows(
     flows->bw = 0; flows->nlinks = 0;
     flows->stor = i / num_tors;
     flows->dtor = i % num_tors;
-
+    //printf("flow demand:%f stor:%d dtor:%d\n",flows->demand,flows->stor,flows->dtor);
     /* Move the iterators */
     flows++; num_flows++; pair++;
   }
+  //printf("flow demand\n");
   return num_flows;
 }
 
@@ -315,6 +319,8 @@ switch_id_t jupiter_get_core(struct network_t *net, uint32_t num) {
 
 switch_id_t jupiter_get_agg(struct network_t *net, uint32_t pod, uint32_t num) {
   TO_J(net);
+  //printf("pod: %d, num %d\n",pod,num);
+  //printf("juppod: %d, jupagg: %d\n",jup->pod,jup->agg);
   assert(pod < jup->pod);
   assert(num < jup->agg);
   return pod * jup->agg + num + jup->core;

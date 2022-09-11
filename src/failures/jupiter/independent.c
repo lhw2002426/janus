@@ -49,8 +49,9 @@ static uint32_t _lds_for_failure(unsigned *tuple, struct mop_block_stats_t *bloc
   }
 
   uint32_t ret = iter->least_dominative_subplan(iter, blocks, nblocks);
-
+  //printf("fail apply nblocks:%d \n",nblocks);
   for (int i = 0; i < nblocks; ++i) {
+    
     assert(blocks[i].down_switches >= tuple[i]);
     blocks[i].down_switches -= tuple[i];
   }
@@ -139,7 +140,10 @@ static void _jii_free(struct failure_scenario_iterator_t *fi,
 static rvar_type_t _jii_prob(struct failure_scenario_iterator_t *fi){
   TO_JI(fi);
   unsigned *tuple = ji->twiddle->tuple(ji->twiddle);
-
+  /*for (int i = 0; i < ji->nblocks; ++i) {
+    printf("%d ",tuple[i]);
+  }
+  printf("apply fail tuple\n");*/
   return ji->failure_prob * 
     _prob_for_failure(tuple, ji->blocks, ji->nblocks, ji->nstates);
 }

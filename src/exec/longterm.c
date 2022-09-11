@@ -86,6 +86,7 @@ static void _build_rvar_cache_parallel(struct expr_t const *expr) {
 
   uint32_t trace_length = trace->num_indices;
   uint32_t nthreads = get_ncores() - 1;
+  //nthreads = 1;//danger change
   struct freelist_repo_t *repo = freelist_create(nthreads);
   struct _network_dp_t *networks = malloc(sizeof(struct _network_dp_t) * nthreads);
   char path[PATH_MAX] = {0};

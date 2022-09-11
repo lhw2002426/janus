@@ -106,7 +106,7 @@ To run the traffic compressor on the above folder (e.g., trace/sample_trace), we
 ```bash
 % make traffic_compressor
 % mkdir trace/janus_trace
-
+ 
 # It is important NOT to forget the trailing slash, i.e.:
 # trace/sample_trace  DOES NOT work
 # trace/sample_trace/ DOES work

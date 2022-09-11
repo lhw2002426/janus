@@ -48,7 +48,9 @@ uint32_t load_keys(char const *fdir) {
 
   info_txt("Loading keys.");
   while (!feof(keys)) {
-    fscanf(keys, "%s\t%s\t%s\t%s\t0\t0 ", tor1, tor2, pod1, pod2);
+    int temp;
+    temp = fscanf(keys, "%s\t%s\t%s\t%s\t0\t0 ", tor1, tor2, pod1, pod2);
+    temp += 1;
     insert_tor_pod(h, tor1, pod1);
     insert_tor_pod(h, tor2, pod2);
   }
@@ -123,9 +125,11 @@ struct traffic_matrix_t *file_to_tm(
       dst += 1;
       iterator++;
     }
-
-    fscanf(file, "%f ", &bw);
+    int temp;
+    temp = fscanf(file, "%f ", &bw);
+    temp +=1;
     bws->bw = bw;
+    //printf("file to tm bw: %d\n",bw);
     bws++;
 
     max_traffic = (max_traffic < bw) ? bw : max_traffic;
@@ -146,6 +150,7 @@ struct traffic_matrix_t *file_to_tm(
   iterator++;
 
   tm->num_pairs = iterator;
+  //printf("iterator: %d tor_count: %d\n",iterator,tor_count);
   assert(iterator == tor_count * tor_count);
   fclose(file);
 

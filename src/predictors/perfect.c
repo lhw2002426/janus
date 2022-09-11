@@ -94,6 +94,6 @@ struct predictor_perfect_t *predictor_perfect_load(struct traffic_matrix_trace_t
   perfect->build = predictor_perfect_build_panic;
   perfect->predict = predictor_perfect_predict;
   perfect->free = predictor_perfect_free;
-
+  //printf("load perfect predictor\n");
   return perfect;
 }

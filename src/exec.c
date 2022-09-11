@@ -154,6 +154,7 @@ static rvar_type_t _sim_network_for_trace_parallel(void *data) {
 
   // Get the next traffic matrix
   tm = builder->tms[builder->index];
+  //printf("builder index: %d\n",builder->index);
 
   int violations = 0;
   {
@@ -205,6 +206,8 @@ _exec_net_dp_create(
     struct expr_t const *expr) {
 
   unsigned nthreads = get_ncores() - 1;
+  //nthreads  = 1;//danger change
+  printf("nthread: %d\n",nthreads);
   exec->net_dp = freelist_create(nthreads);
   struct _network_dp_t *networks = malloc(sizeof(struct _network_dp_t) * nthreads);
 
@@ -220,6 +223,7 @@ _exec_net_dp_free(
     struct exec_t *exec,
     struct expr_t *expr) {
   uint32_t nthreads = exec->net_dp->size;
+  //nthreads  = 1;//danger change
   for (uint32_t i = 0; i < nthreads; ++i) {
     struct _network_dp_t *network = freelist_get(exec->net_dp);
     network->net->free(network->net);
@@ -239,6 +243,8 @@ exec_simulate_ordered(
 
   if (!exec->net_dp)
     _exec_net_dp_create(exec, expr);
+  
+  //printf("simulate! trace lenth: %d\n",trace_length);
 
   uint32_t nthreads = freelist_size(exec->net_dp);
   struct freelist_repo_t *repo = exec->net_dp;
@@ -257,7 +263,7 @@ exec_simulate_ordered(
   for (uint32_t j = 0; j < nthreads; ++j) {
     mop->pre(mop, networks[j]->net);
   }
-
+  //info("nthread: %d",nthreads);
 
   /* Fill out the data structure for parallel execution */
   struct _rvar_cache_builder_parallel *data = 
@@ -270,7 +276,7 @@ exec_simulate_ordered(
     data[j].network_freelist = repo;
     data[j].expr = expr;
   }
-
+  
   rvar_type_t *vals = monte_carlo_parallel_ordered_rvar(
       _sim_network_for_trace_parallel, 
       data, trace_length,
@@ -381,8 +387,12 @@ risk_cost_t exec_plan_cost(
     bw_t subplan_cost = 0;
 
     for (uint32_t step = 0; step < expr->mop_duration; ++step) {
+      //printf("state: %d\n",iter->state);
+      if (iter->state >= iter->_end) //lhw danger change
+        iter->state = iter->_end - 1;//lhw danger change
       iter->get(iter, &tm);
 
+      
       if (!tm)
         panic("Traffic matrix is nil.  Possibly reached the end of the trace: %d", step);
 
@@ -393,8 +403,10 @@ risk_cost_t exec_plan_cost(
 
       running_time += 1;
       violations = dataplane_count_violations(dp, 0);
+      //printf("going to count cost violations: %d,numtorpairs: %d\n",violations,num_tor_pairs);
       subplan_cost += expr->risk_violation_cost->cost( expr->risk_violation_cost,
           ((rvar_type_t)violations/(rvar_type_t)(num_tor_pairs)));
+      //printf("step: %d mopduration: %d subplancost: %f\n",step,expr->mop_duration,subplan_cost);
       dataplane_free_resources(dp);
 
       iter->next(iter);
@@ -410,6 +422,7 @@ risk_cost_t exec_plan_cost(
 
   // Include the rest of the idol time as part of the cost of the mop
   for (uint32_t i = running_time; i < expr->criteria_time->steps; ++i) {
+      //printf("running time:%d ,steps:%d\n",running_time,expr->criteria_time->steps);
       iter->get(iter, &tm);
       if (!tm)
         panic("Traffic matrix is nil.  Possibly reached the end of the trace: %d", i);
@@ -423,6 +436,7 @@ risk_cost_t exec_plan_cost(
       violations = dataplane_count_violations(dp, 0);
       cost += expr->risk_violation_cost->cost( expr->risk_violation_cost,
           ((rvar_type_t)violations/(rvar_type_t)(num_tor_pairs)));
+      //printf("i: %d steps: %d cost: %f\n",i,expr->criteria_time->steps,cost);
       dataplane_free_resources(dp);
 
       iter->next(iter);
@@ -433,6 +447,7 @@ risk_cost_t exec_plan_cost(
 
   // Include the number of mops as time cost criteria
   risk_cost_t time_cost = expr->criteria_time->cost(expr->criteria_time, nmops);
+  //printf(" cost: %f time_cost: %f\n",cost,time_cost);
   return cost + time_cost;
 }
 
@@ -457,11 +472,15 @@ void exec_traffic_stats(
     struct traffic_stats_t **ret_core_stats) {
   struct traffic_matrix_t *tm = 0;
 
+  //printf("enditer1: %d\n",iter->end(iter));
   uint32_t tidx = 0;
   uint32_t num_tors = expr->num_pods * expr->num_tors_per_pod;
+  //printf("num_pods: %d num_tors_per_pod: %d\n",expr->num_pods,expr->num_tors_per_pod);
 
+  //printf("going to malloc for traffic stats\n");
   struct traffic_stats_t *pods = malloc(sizeof(struct traffic_stats_t) * expr->num_pods);
   memset(pods, 0, sizeof(struct traffic_stats_t) * expr->num_pods);
+  //printf("malloc finished\n");
   for (uint32_t i = 0; i < expr->num_pods; ++i) {
     pods[i].out.min = INFINITY;
     pods[i].in.min = INFINITY;
@@ -473,9 +492,15 @@ void exec_traffic_stats(
   core->in.min = INFINITY;
   core->out.min = INFINITY;
 
+  //printf("enditer2: %d\n",iter->end(iter));
   while (!iter->end(iter) && tidx < ntms) {
+    //printf("tm: %d tidx: %d ntms: %d\n",tm,tidx,ntms);
     iter->get(iter, &tm);
     iter->next(iter);
+    //printf("tm: %d \n",tm);
+    /*for(int i = 0;i< tm->num_pairs;i++)
+    printf("%f ",((tm->bws)+i)->bw);
+    printf("\ntm bw %d\n",tm->num_pairs);*/
 
     for (uint32_t sp = 0; sp < expr->num_pods; ++sp) {
       spod = &pods[sp];
@@ -509,16 +534,21 @@ void exec_traffic_stats(
     STATS(core->out);
     tidx++;
   }
-
+  //printf("pod0.in.sum: %f\n",pods[0].in.mean);
   info("Read: %d", tidx);
-
+  //printf("going to FIX_AVG %d\n",expr->num_pods);
   for (uint32_t i = 0; i < expr->num_pods; ++i) {
     FIX_AVG(pods[i].in, tidx);
     FIX_AVG(pods[i].out, tidx);
   }
+  //printf("going to fix core\n");
   FIX_AVG(core->out, tidx);
+  //printf("going to fix corein\n");
   FIX_AVG(core->in, tidx);
+  //printf("tm: %d num_tors: %d\n",tm,num_tors);
 
+  //printf("tmnumpairs: %d\n", tm->num_pairs);
+  
   assert(tm->num_pairs == num_tors * num_tors);
 
   *ret_pod_stats = pods;
@@ -546,12 +576,23 @@ struct exec_critical_path_stats_t *exec_critical_path_analysis(
   struct traffic_stats_t *core_stats = 0;
   uint32_t num_pods = 0;
 
+  //printf("going to exec_traffic_stats\n");
   /* Get traffic stats for the long-term planner */
   exec_traffic_stats(
       exec, expr, iter, iter_length,
       &pod_stats, &num_pods, &core_stats);
-
+  //printf("finished to exec_traffic_stats\n");
+  /*for(int i = 0;i<num_pods;i++)
+  {
+    printf("%d ",pod_stats[i].pod_id);
+  }
+  printf("pods before sort\n");*/
   qsort(pod_stats, num_pods, sizeof(struct traffic_stats_t), _ts_cmp);
+  /*for(int i = 0;i<num_pods;i++)
+  {
+    printf("%d ",pod_stats[i].pod_id);
+  }
+  printf("pods after sort\n");*/
   struct exec_critical_path_stats_t *plan = malloc(
       sizeof(struct exec_critical_path_stats_t));
   plan->num_paths = 0;
@@ -572,21 +613,24 @@ struct exec_critical_path_stats_t *exec_critical_path_analysis(
   for (uint32_t i = 0; i < expr->num_pods; ++i) {
     uint32_t id = pod_stats[i].pod_id;
     paths[id].bandwidth = pod_stats[i].in.max;
+    //printf("critical path id: %d bw: %f\n",id,paths[id].bandwidth);
 
     // Max number of switches to upgrade
     paths[id].sws = malloc(sizeof(
           struct jupiter_located_switch_t *) * expr->num_aggs_per_pod);
   }
   paths[num_groups - 1].bandwidth = core_stats->in.max;
+  //printf("critical path id: core bw: %d\n",paths[num_groups - 1].bandwidth);
   paths[num_groups - 1].sws = malloc(
       sizeof(struct jupiter_located_switch_t *) * expr->num_cores);
-
+  //printf("nlocatedswitch: %d\n",expr->nlocated_switches);
   for (uint32_t i = 0; i < expr->nlocated_switches; ++i) {
     struct jupiter_located_switch_t *sw = &expr->located_switches[i];
     paths[sw->pod].pod = sw->pod;
     paths[sw->pod].type = sw->type;
     if (sw->type == JST_AGG) {
       paths[sw->pod].sws[paths[sw->pod].num_switches++] = sw;
+      //printf("agg in critical path id: %d pod: %d\n",sw->sid,sw->pod);
     } else if (sw->type == JST_CORE) {
       paths[num_groups - 1].sws[paths[num_groups - 1].num_switches++] = sw;
     } else {
@@ -603,7 +647,7 @@ struct exec_critical_path_stats_t *exec_critical_path_analysis(
 
   free(pod_stats);
   free(core_stats);
-
+  //printf("numpath: %d\n",plan->num_paths);
   return plan;
 }
 
@@ -616,7 +660,7 @@ void exec_critical_path_analysis_update(
 
   struct traffic_stats_t *pod_stats = 0, *core_stats = 0;
   uint32_t num_pods = 0;
- 
+  
   // Get the traffic stats and update the paths
   exec_traffic_stats(exec, expr, iter, ntms, 
       &pod_stats, &num_pods, &core_stats);

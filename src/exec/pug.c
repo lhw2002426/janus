@@ -17,10 +17,24 @@
 
 #include "exec/pug.h"
 
+
+#include <math.h>
+
+#include "algo/group_gen.h"
+#include "util/common.h"
+#include "util/log.h"
+#include "networks/jupiter.h"
+
+#include "plan.h"
+#include "plans/jupiter.h"
+
 #define TO_PUG(e) struct exec_pug_t *pug = (struct exec_pug_t *)e;
 #define EXP(p) ((p)->expected((struct rvar_t *)(p)))
 // #define ROLLBACK_EXPERIMENT 1
 #undef ROLLBACK_EXPERIMENT
+
+#define TO_JITER(p) struct jupiter_switch_plan_enumerator_iterator_t *jiter =\
+     ((struct jupiter_switch_plan_enumerator_iterator_t *)(p))
 
 #if DEBUG_MODE == 1
 #define DEBUG(txt, ...) info(txt, __VA_ARGS__);
@@ -68,7 +82,7 @@ _plan_invalidate_not_equal(struct plan_repo_t *repo, unsigned subplan, unsigned 
   uint32_t index = 0;
   if (repo->plan_count == 0)
     return;
-
+  //printf("plan count before invalidate: %d\n",repo->plan_count);
   uint32_t last_index = repo->plan_count - 1;
 
   unsigned *ptr = repo->plans;
@@ -110,6 +124,7 @@ _plan_invalidate_not_equal(struct plan_repo_t *repo, unsigned subplan, unsigned 
 
   //DEBUG("removed: %d plans", removed);
   repo->plan_count = last_index + 1;
+  //printf("plan count after invalidate: %d\n",repo->plan_count);
   free(tmp);
 }
 
@@ -168,7 +183,11 @@ _plans_get(struct exec_t *exec, struct expr_t const *expr) {
 
   for (iter->begin(iter); !iter->end(iter); iter->next(iter)) {
     iter->plan(iter, &subplans, &subplan_count);
-    
+    /*for(int j = 0;j<subplan_count;j++)
+    {
+      printf("%d ",subplans[j]);
+    }
+    printf("subplans in planget\n");*/
     if (!expr->criteria_time->acceptable(expr->criteria_time, subplan_count)) {
       free(subplans);
       continue;
@@ -177,7 +196,11 @@ _plans_get(struct exec_t *exec, struct expr_t const *expr) {
     memset(plan_ptr, 0, plan_size_in_bytes);
     memcpy(plan_ptr, subplans, sizeof(unsigned) * subplan_count);
     plan_ptr += max_plan_size;
-
+    /*for(int j = 0;j<subplan_count;j++)
+    {
+      printf("%d ",plans[j]);
+    }
+    printf("plans in planget\n");*/
     plan_count++;
 
     if (plan_count >= cap) {
@@ -215,6 +238,7 @@ static struct rvar_t *
 _short_term_risk_using_predictor(struct exec_t *exec, struct expr_t const *expr,
     unsigned subplan, trace_time_t now) {
   TO_PUG(exec);
+  //printf("short term pred!\n");
   struct mop_t *mop = pug->iter->mop_for(pug->iter, subplan);
 
   struct predictor_t *pred = pug->pred;
@@ -232,9 +256,15 @@ _short_term_risk_using_predictor(struct exec_t *exec, struct expr_t const *expr,
       struct traffic_matrix_t *tm = 0;
       titer->get(titer, &tm);
       tms[index++] = tm;
+      /*for(int ii = 0;ii<tm->num_pairs;ii++)
+      {
+        printf("%f ",tm->bws[ii].bw);
+      }
+      printf("\n monte carlo num: %d\n",tm->num_pairs);*/
     }
     titer->free(titer);
   }
+  //printf("tm index: %d\n",index);
   iter->free(iter);
   assert(tm_count == index);
 
@@ -249,6 +279,7 @@ _short_term_risk_using_predictor(struct exec_t *exec, struct expr_t const *expr,
   /* Build the rvar for the cost of the short term planner */
   index = 0;
   struct risk_cost_func_t *func = expr->risk_violation_cost;
+  //printf("num_sample: %d\n",num_samples);
   rvar_type_t *costs = malloc(sizeof(rvar_type_t) * num_samples);
   for (uint32_t i = 0; i < num_samples; ++i) {
     costs[i] = 0;
@@ -287,6 +318,7 @@ _term_best_plan_to_finish(struct exec_t *exec, struct expr_t const *expr,
   struct rvar_t *zero_rvar = rvar_zero();
   unsigned max_plan_length = MIN(plans->max_plan_size, expr->criteria_time->steps);
 
+  //printf("how many plan: %d",plans->plan_count);
   for (uint32_t i = 0; i < plans->plan_count; ++i) {
     unsigned plan_len = 0;
     cost_rvar = (struct rvar_t *)zero_rvar->to_bucket(zero_rvar, BUCKET_SIZE);
@@ -312,7 +344,11 @@ _term_best_plan_to_finish(struct exec_t *exec, struct expr_t const *expr,
     /* Calculate the cost of the plan */
     struct rvar_t *sum = cost_rvar->convolve(cost_rvar, rvar, BUCKET_SIZE);
     risk_cost_t cost = viol_cost->rvar_to_cost(viol_cost, sum);
-    cost += expr->criteria_time->cost(expr->criteria_time, cur_step + plan_len + 1); 
+    cost += expr->criteria_time->cost(expr->criteria_time, cur_step + plan_len + 1);
+    double time_cost = expr->criteria_time->cost(expr->criteria_time, cur_step + plan_len + 1);
+    if(time_cost >=1e-5)
+      printf("cost+=: %f\n",time_cost); 
+    //printf("rvar cost: %f\n",cost);
     sum->free(sum);
 
 #if DEBUG_MODE==1
@@ -367,7 +403,7 @@ _term_best_plan_to_finish(struct exec_t *exec, struct expr_t const *expr,
     best_risk->free(best_risk);
   *ret_plan_idx = best_plan_idx;
   *ret_plan_length = best_plan_len;
-
+  //printf("best rvar cost: %f\n",best_cost);
   zero_rvar->free(zero_rvar);
   return best_cost;
 }
@@ -375,7 +411,7 @@ _term_best_plan_to_finish(struct exec_t *exec, struct expr_t const *expr,
 static int
 _exec_pug_find_best_next_subplan(struct exec_t *exec,
     struct expr_t const *expr, trace_time_t at, risk_cost_t *ret_cost,
-    unsigned *ret_plan_len, unsigned *ret_plan, unsigned cur_step) {
+    unsigned *ret_plan_len, unsigned *ret_plan, unsigned cur_step){//,struct rvar_t **rcache_lhw
   TO_PUG(exec);
   struct plan_repo_t *plans = pug->plans;
   risk_cost_t  best_plan_cost = INFINITY;
@@ -388,17 +424,27 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
   int finished = 1;
 
   struct rvar_t **rcache = malloc(sizeof(struct rvar_t *) * pug->plans->_subplan_count);
+  //printf("subplan count:%d\n",pug->plans->_subplan_count);
   for (uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
+    //printf("monte carlo get\n");
     rcache[i] = pug->short_term_risk(exec, expr, i, at);
+    if (subplans[i] != 1)
+      continue;
+    //rcache_lhw = pug->short_term_risk(exec, expr, i, at);
   }
-
+  int remain_subplan_count = 0;
+  //printf("how many subplan:%d\n",pug->plans->_subplan_count);
 #ifndef ROLLBACK_EXPERIMENT
   for (uint32_t i = 1; i < pug->plans->_subplan_count; ++i) {
 #else
   for (uint32_t i = 4; i < MIN(22, pug->plans->_subplan_count); ++i) {
 #endif
     if (subplans[i] != 1)
+    {
       continue;
+    }
+    //printf(" %d \n",i);
+    remain_subplan_count += 1;
 
     finished = 0;
     /* TODO: This is very hacky atm, but unfortunately, there is not enough
@@ -455,7 +501,14 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
           plans->plans + (plan_idx * plans->max_plan_size), 
           plans->plan_size_in_bytes);
     }
-
+    /*if(i==3)//danger change
+    {
+      memcpy( best_plan_subplans, 
+          plans->plans + (plan_idx * plans->max_plan_size), 
+          plans->plan_size_in_bytes);
+      printf("change best subplan: %d\n",best_plan_subplans[0]);
+      break;
+    }*/
 
     // Recover the plans that we stopped looking into
     plans->plan_count = plan_count;
@@ -463,8 +516,8 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
     // info("Expected risk of running subplan %d is %f", i, st_risk->expected(st_risk));
     // Get the best long-term plan to finish subplans[i]
   }
-
-  for (uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
+  //printf("best plan: %d remain_subplan_count: %d\n",best_plan_len,remain_subplan_count);
+  for(uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
     rcache[i]->free(rcache[i]);
   }
   free(rcache);
@@ -478,7 +531,7 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
 #if DEBUG_MODE==1
   info(">>>> Choosing subplan %d with cost %lf", best_subplan, best_plan_cost);
 #endif
-
+  //printf("finished best plan: %d\n",best_plan_subplans[0]);
   return finished;
 }
 
@@ -522,11 +575,13 @@ _exec_pug_best_plan_at(struct exec_t *exec, struct expr_t const *expr,
    * - Omid 3/31/2019
    * */
   int first_estimate = 0;
-
+  //struct rvar_t **rcache_lhw = malloc(sizeof(struct rvar_t *) * pug->plans->_subplan_count);
+  //printf("rcache lhw\n");
   while (1) {
+    //printf("find best next subplan! %d\n",plans->_cur_index);
     finished = _exec_pug_find_best_next_subplan(
         exec, expr, at, best_plan_cost, best_plan_len, best_plan_subplans,
-        plans->_cur_index);
+        plans->_cur_index);//,rcache_lhw
 
 #if DEBUG_MODE
     _print_freedom_plan(exec, expr, *best_plan_len, best_plan_subplans);
@@ -540,14 +595,21 @@ _exec_pug_best_plan_at(struct exec_t *exec, struct expr_t const *expr,
     _plan_invalidate_not_equal(
         plans, best_plan_subplans[plans->_cur_index], plans->_cur_index);
     plans->_cur_index += 1;
-
+    //printf("invalidate not equal plan count: %d\n",plans->plan_count);
     if (!first_estimate) {
       running_cost = *best_plan_cost;
       first_estimate = 1;
     }
     at += expr->mop_duration;
   }
+  
+  /*for(uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
+    rcache_lhw[i]->free(rcache_lhw[i]);
+  }
+  printf("finish exec plan\n");
+  free(rcache_lhw);*/
   *best_plan_len = plans->_cur_index;
+  
   return running_cost;
 }
 
@@ -607,9 +669,21 @@ _exec_pug_validate(struct exec_t *exec, struct expr_t const *expr) {
       expr->upgrade_freedom,
       expr->upgrade_nfreedom);
   pug->iter = en->iter((struct plan_t *)en);
+  
   pug->planner = (struct plan_t *)en;
 
   pug->plans = _plans_get(exec, expr);
+  //printf("subplan_count: %d plan count: %d\n",pug->plans->_subplan_count,pug->plans->plan_count);
+  TO_JITER(pug->iter);
+    for(int id = 0;id<pug->plans->_subplan_count;id++)
+    {
+      jiter->state->to_tuple(jiter->state, id, jiter->_tuple_tmp);
+      for (uint32_t i = 0; i < jiter->state->tuple_size; ++i) {
+        //printf("%d ",jiter->_tuple_tmp[i]);
+      }
+      //printf("list subplan: %d\n",id);
+    }
+  
   if (pug->plans == 0)
     panic_txt("Couldn't build the plan repository.");
 
@@ -644,11 +718,17 @@ _exec_pug_runner(struct exec_t *exec, struct expr_t const *expr) {
           exec, expr, at, &best_plan_cost, &best_plan_len, best_plan_subplans);
       pug->mops = _exec_mops_for_create(
           exec, expr, best_plan_subplans, best_plan_len);
+      /*for(int j = 0;j<best_plan_len;j++)
+      {
+        printf("%d ",best_plan_subplans[j]);
+      }
+      printf("best sub plan len: %d estimated cost: %f\n",best_plan_len,estimated_cost);*/
       pug->nmops = best_plan_len;
     }
-
     risk_cost_t actual_cost = exec_plan_cost(
         exec, expr, pug->mops, pug->nmops, at);
+
+    
 
     if (pug->type != PUG_LONG) 
       _exec_mops_for_free(exec, expr, pug->mops, pug->nmops);

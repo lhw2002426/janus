@@ -15,6 +15,8 @@ static struct plan_iterator_t* jupiter_switch_plan_enumerator_iterator(
 static struct jupiter_group_t *
 _jupiter_get_group_for(struct jupiter_multigroup_t *mg,
     struct jupiter_located_switch_t *sw) {
+  //printf("get group for\n");
+  //printf("swcoler: %d, mg ngroups: %d\n",sw->color,mg->ngroups);
   return &mg->groups[sw->color % mg->ngroups];
 }
 
@@ -30,8 +32,10 @@ _jupiter_add_switch_to_class(
 
 static void
 _jupiter_build_groups(struct jupiter_switch_plan_enumerator_t *planner) {
+  //printf("build group\n");
   for (int i = 0; i < planner->num_switches; ++i) {
     struct jupiter_located_switch_t *sw = &planner->switches[i];
+    //printf("build group: %d\n",i);
     struct jupiter_group_t *group = _jupiter_get_group_for(&planner->multigroup, sw);
 
     uint32_t done = 0;
@@ -44,7 +48,7 @@ _jupiter_build_groups(struct jupiter_switch_plan_enumerator_t *planner) {
         break;
       }
     }
-
+    
     if (!done) {
       group->nclasses += 1;
       group->classes = realloc(group->classes, sizeof(struct jupiter_class_t) * group->nclasses);
@@ -84,23 +88,23 @@ struct jupiter_switch_plan_enumerator_t *jupiter_switch_plan_enumerator_create(
 
   planner->iter = jupiter_switch_plan_enumerator_iterator;
 
-
   planner->multigroup.ngroups = ndegree;
   planner->multigroup.groups = malloc(sizeof(struct jupiter_group_t) * ndegree);
   memset(planner->multigroup.groups, 0, sizeof(struct jupiter_group_t) * ndegree);
 
   for (uint32_t i = 0; i < ndegree; ++i) {
     planner->multigroup.groups[i].group_size = freedom_degree[i];
+    //printf("group size: %d\n",freedom_degree[i]);
   }
-
+  
   _jupiter_build_groups(planner);
-
+  //printf("create enmuerator\n");
   for (uint32_t i = 0; i < ndegree; ++i) {
     struct jupiter_group_t *group = &planner->multigroup.groups[i];
     group->group_size = MIN(freedom_degree[i], _max_class_size(group));
   }
 
-
+  
   return planner;
 }
 
@@ -162,16 +166,21 @@ void _jupiter_mop_free(struct mop_t *mop) {
 
 static
 int _jupiter_mop_pre(struct mop_t *mop, struct network_t *net) {
+  int debugout = 1;
   struct jupiter_network_t *jup = (struct jupiter_network_t *)net;
   struct jupiter_switch_mop_t *jop = (struct jupiter_switch_mop_t *)mop;
   (void)(jup); (void)(jop);
-
+  //printf("drain nswitches: %d\n",jop->nswitches);
   for (uint32_t i = 0; i < jop->nswitches; ++i) {
     struct jupiter_located_switch_t *sw = jop->switches[i];
     (void)(sw);
     jup->drain_switch((struct network_t *)jup, sw->sid);
+    //printf("drain sid: %d pod: %d\n",sw->sid,sw->pod);
+    debugout = 0;
+    
   }
-
+  //jup->drain_switch((struct network_t *)jup, 4);//danger change
+  //printf("new drain: 4\n");
   return 0;
 }
 
@@ -268,10 +277,11 @@ void _sup_plan(struct plan_iterator_t *iter, unsigned **ret, unsigned *size) {
   *ret = arr;
 
   for (uint32_t i = 0; i < state->state_length; ++i) {
+    //printf("%d ",state->state[i]);
     *arr = state->state[i];
     arr++;
   }
-
+  //printf("subplan\n");
   *size = state->state_length;
 }
 
@@ -345,11 +355,14 @@ struct mop_t *_sup_mop_for(struct plan_iterator_t *iter, unsigned id) {
   mop->switches = malloc(sizeof(struct jupiter_located_switch_t *) * mop->ncap);
   mop->nswitches = 0;
   jiter->state->to_tuple(jiter->state, id, jiter->_tuple_tmp);
-
+  /*for (uint32_t i = 0; i < jiter->state->tuple_size; ++i)
+    printf("%d ",jiter->_tuple_tmp[i]);
+  printf("tuple tmp\n");*/
   struct jupiter_group_t *groups = jiter->planner->multigroup.groups;
   for (uint32_t i = 0; i < jiter->state->tuple_size; ++i) {
     struct jupiter_group_t *group = &groups[i];
     float portion = (float)jiter->_tuple_tmp[i] / (float)group->group_size;
+    //printf("portion: %f\n",portion);
 
     /* TODO: Right now we don't consider remainder in mop_for. This could
      * be a big deal when only a few switches are left in each group.
@@ -375,6 +388,7 @@ struct mop_t *_sup_mop_for(struct plan_iterator_t *iter, unsigned id) {
 
       for (uint32_t k = 0; k < sw_to_up; ++k) {
         mop->switches[mop->nswitches++] = class->switches[k];
+        //printf("mop for switches id: %d pod: %d\n",class->switches[k]->sid,class->switches[k]->pod);
       }
     }
   }
@@ -384,7 +398,7 @@ struct mop_t *_sup_mop_for(struct plan_iterator_t *iter, unsigned id) {
   mop->size = _jupiter_mop_size;
   mop->explain = _jupiter_mop_explain;
   mop->block_stats = _jupiter_block_stats;
-
+  //printf("end sup mop for\n");
   return (struct mop_t *)mop;
 }
 
@@ -454,12 +468,21 @@ struct jupiter_switch_plan_enumerator_iterator_t *_sup_init(
 
   struct jupiter_group_t *groups = planner->multigroup.groups;
   iter->state = 0;
-
+  //printf("npart groups: %d\n",planner->multigroup.ngroups);
+  int debug_cnt = 0;
   for (uint32_t i = 0; i < planner->multigroup.ngroups; ++i) {
+    //printf("group_size: %d\n",groups[i].group_size);
     struct group_iter_t *s = npart_create(groups[i].group_size);
+    
     info("Creating an npart with %d size", groups[i].group_size);
     if (iter->state == 0) {
       iter->state = s;
+      /*for(int j = 0;j<groups[i].group_size;j++)
+      {
+        printf("%d ",iter->state->state[j]);
+      }
+      printf("test subplan: %d\n",debug_cnt);*/
+      debug_cnt++;
     } else {
       iter->state = dual_npart_create(iter->state, s);
     }
@@ -467,7 +490,14 @@ struct jupiter_switch_plan_enumerator_iterator_t *_sup_init(
 
   info("Iter state is: %p", iter->state);
   iter->_tuple_tmp = malloc(sizeof(uint32_t) * iter->state->tuple_size);
-
+  /*for(iter->begin(iter);!iter->end(iter);iter->next(iter))
+  {
+    for(int j = 0;j<iter->state->state_length;j++)
+      {
+        printf("%d ",iter->state->state[j]);
+      }
+      printf("test subplan %d\n",iter->state->state_length);
+  }*/
   return iter;
 }
 
@@ -494,6 +524,9 @@ jupiter_mop_for(struct jupiter_located_switch_t **sws, uint32_t nsws) {
 
   for (uint32_t i = 0; i < nsws; ++i) {
     mop->switches[i] = sws[i];
+    //printf("id: %d pod: %d",sws[i]->sid,sws[i]->pod);
+    //printf("jupiter mopfor\n");
   }
+  
   return (struct mop_t *)mop;
 }

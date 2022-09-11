@@ -14,8 +14,10 @@ void _tmti_begin(struct traffic_matrix_trace_iter_t *iter) {
 
 int _tmti_next(struct traffic_matrix_trace_iter_t *iter) {
     iter->state += 1;
-    if (iter->state > iter->_end) {
-        iter->state = iter->_end;
+    //printf("state add to end %d end: %d\n",iter->state,iter->_end);
+    if (iter->state > iter->_end) {//lhw danger change if (iter->state > iter->_end)
+        iter->state = iter->_end;//iter->state = iter->_end
+        //printf("state lager than end %d\n",iter->state);
         return 0;
     }
     return 1;
@@ -44,13 +46,17 @@ void _tmti_go_to(struct traffic_matrix_trace_iter_t *iter, trace_time_t time) {
 }
 
 int _tmti_end(struct traffic_matrix_trace_iter_t *iter) {
+    //printf("tmti state:%d end: %d\n",iter->state,iter->_end);
     return iter->state >= iter->_end; 
 }
 
 void _tmti_get(struct traffic_matrix_trace_iter_t *iter, struct traffic_matrix_t **tm) {
     trace_time_t time;
+    //printf("trace: %d state: %d\n",iter->trace, iter->state);
+    
     if (traffic_matrix_trace_get_nth_key(iter->trace, iter->state, &time) != SUCCESS) {
         *tm = 0;
+        //printf("get traffic failed!\n");
         return;
     }
     traffic_matrix_trace_get(iter->trace, time, tm);
@@ -76,6 +82,7 @@ static struct traffic_matrix_trace_iter_t *_tmt_iter(
 
     iter->_begin = 0;
     iter->_end = trace->num_indices;
+    //printf("indices: %d\n",trace->num_indices);
 
     return iter;
 }
@@ -329,6 +336,9 @@ void _traffic_matrix_trace_set_key_in_cache(
   cache->is_set = 1;
   cache->time = key;
   cache->tm = tm;
+  /*for(int i = 0;i< tm->num_pairs;i++)
+    printf("%f ",((tm->bws)+i)->bw);
+  printf("\n tm bw %d\n",tm->num_pairs);*/
 }
 
 void traffic_matrix_trace_get(
@@ -375,6 +385,7 @@ uint64_t _traffic_matrix_trace_index_count(FILE *index) {
   // XXX: Bad idea: if the data-structures change we cannot just "read" the files anymore
   //      Better way is to properly read and write the relevant parts by "hand."
   (void) !fread(&size, sizeof(size), 1, index);
+  //printf("indices size: %d index file: %d\n",size, index);
   return size;
 }
 
@@ -485,6 +496,7 @@ struct traffic_matrix_trace_t *traffic_matrix_trace_load(
   (void) strncat(fdata, ".data", PATH_MAX - 1);
 
   FILE *index = fopen(fname, "ab+");
+  //printf("fname: %s\n",fname);
   FILE *data = fopen(fdata, "ab+");
 
   info("Trace: %.40s and %.40s files.", fdata, fname);
@@ -494,13 +506,14 @@ struct traffic_matrix_trace_t *traffic_matrix_trace_load(
   }
 
   uint64_t indices = _traffic_matrix_trace_index_count(index);
+  //printf("indices: %d\n",indices);
   struct traffic_matrix_trace_t *trace = traffic_matrix_trace_create(num_caches, indices, 0);
   trace->fdata = data;
   trace->num_indices = indices;
   trace->findex = index;
 
   _traffic_matrix_trace_load_indices(trace);
-
+  //printf("trace load finish\n");
   return trace;
 }
 
@@ -557,6 +570,7 @@ struct traffic_matrix_t *traffic_matrix_zero(pair_id_t num_pairs) {
 int traffic_matrix_trace_get_nth_key(
     struct traffic_matrix_trace_t *trace,
     uint32_t index, trace_time_t *ret) {
+  //printf("get_nth_key index: %d indices %d\n",index,trace->num_indices);
   if (index >= trace->num_indices)
     return FAILURE;
 
@@ -581,6 +595,7 @@ int _ttit_end(struct traffic_matrix_trace_iter_t *iter) {
 int _ttit_next(struct traffic_matrix_trace_iter_t *iter) {
   TO_TTIT(iter);
   iter->state += 1;
+  //printf("state add to len %d\n",iter->state);
   if (iter->state >= ttit->tms_length)
     iter->state = ttit->tms_length;
   return 1;

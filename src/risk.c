@@ -68,11 +68,13 @@ struct rvar_t *_default_rvar_to_rvar(struct risk_cost_func_t *f, struct rvar_t *
 #define EPS 1e-6
 risk_cost_t
 step_func_cost(struct risk_cost_func_t *t, rvar_type_t val) {
+  //printf("exec step cost func\n");
   struct risk_cost_func_step_t *r = (struct risk_cost_func_step_t *)t;
   risk_cost_t prev_value = r->pairs[r->nsteps-1].cost;
-
+  //printf("cost val: %f\n",val);
   // Sample string: 0/50-99.5/30-99.9/10-100/0
   for (unsigned i = r->nsteps; i != 0; --i){
+    //printf("step: %d, cost: %d\n",r->pairs[i-1].step,r->pairs[i-1].cost);
     if (r->pairs[i-1].step + EPS < val ) {
       return prev_value;
     }
@@ -167,6 +169,7 @@ risk_cost_logarithmic_from_string(char const *string) {
 
 static struct risk_cost_func_t *
 risk_cost_stepped_from_string(char const *string) {
+  printf("define step cost func\n");
   struct risk_cost_func_step_t *ret = malloc(sizeof(struct risk_cost_func_step_t));
   ret->cost = step_func_cost;
 
@@ -211,7 +214,7 @@ risk_cost_string_to_func(char const *value) {
 
   sscanf(value, "%[^-]-%s", func_name, rest);
   struct risk_cost_func_t *ret = 0;
-
+  printf("func_name: %s\n",func_name);
   if        (strcmp(func_name,  "stepped") == 0) {
     ret = risk_cost_stepped_from_string(rest);
   } else if (strcmp(func_name, "linear") == 0) {

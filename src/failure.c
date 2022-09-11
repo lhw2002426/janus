@@ -24,7 +24,9 @@ struct rvar_t *failure_default_apply(
   double prob_sum = 0;
   struct array_t *arr_dists = array_create(sizeof(rvar_type_t), 10);
   struct array_t *arr_rvs = array_create(sizeof(struct rvar_t *), 10);
+  int debug_cnt = 0;
   for (fi->begin(fi); !fi->end(fi); fi->next(fi)) {
+    debug_cnt++;
     double prob = fi->prob(fi);
     if (prob == 0) continue;
 
@@ -34,6 +36,7 @@ struct rvar_t *failure_default_apply(
     array_append(arr_rvs, (void *)&rv);
     array_append(arr_dists, (void *)&prob);
   }
+  //printf("deal fail debug count: %d\n",debug_cnt);
   struct rvar_t **rvs = 0;  rvar_type_t *dists = 0;
   unsigned size = array_size(arr_dists);
   array_transfer_ownership(arr_dists, (void**)&dists);

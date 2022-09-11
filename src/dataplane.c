@@ -61,13 +61,19 @@ rvar_type_t dataplane_mlu(struct dataplane_t const *dp) {
 int dataplane_count_violations(struct dataplane_t const *dp, float max_bandwidth) {
   if (max_bandwidth == 0)
     max_bandwidth = INFINITY;
-
+  //printf("maxbadwidth: %d\n",max_bandwidth);
   int violations = 0;
   for (int flow_id = 0; flow_id < dp->num_flows; ++flow_id) {
     struct flow_t *flow = &dp->flows[flow_id];
     if (flow->bw < flow->demand && flow->bw < max_bandwidth) {
+      //printf("violations add! flowid: %d flowbw: %f,flowdemand: %f\n",flow_id,flow->bw,flow->demand);
       violations +=1 ;
     }
+    /*else
+    {
+      //if(flow_id%100 == 0)
+        printf("violations debug flowid: %d flowbw: %f,flowdemand: %f\n",flow_id,flow->bw,flow->demand);
+    }*/
   }
 
   return violations;

@@ -44,7 +44,7 @@ static __attribute__((unused)) void ensure_consistency_of_links(struct dataplane
 }
 
 static __attribute__((unused)) void dataplane_smallest(struct dataplane_t *dataplane) {
-  printf("smallest link chain: \n");
+  //printf("smallest link chain: \n");
   struct link_t *link = dataplane->smallest_link;
   while (link) {
     printf("(%d: "BWF") ~> \n", link->id, per_flow_capacity(link));
@@ -54,7 +54,7 @@ static __attribute__((unused)) void dataplane_smallest(struct dataplane_t *datap
       }
     link = link->next;
   }
-  printf("\n");
+  //printf("\n");
 }
 
 static __attribute__((unused)) void dataplane_consistent(struct dataplane_t *dataplane) {
@@ -293,14 +293,15 @@ static void populate_and_sort_flows(struct dataplane_t *dataplane) {
     if (flow->demand < EPS) {
       continue;
     }
-
+    //printf("flow: %d demand: %f stor: %d dtor: %d ptr: %d\n",i,flow->demand,flow->stor,flow->dtor,*ptr);
     for (int j = 0; j < *ptr; ++j) {
       struct link_t *link = &dataplane->links[*(ptr+j+1)];
       flow->links[flow->nlinks++] = link;
       link->nflows++;
+      //printf("  link: %d, capacity: %f\n",link->id,link->capacity);
     }
   }
-
+  //printf("flow demand in sort\n");
   /* sort the flows by their demand */
   qsort(dataplane->flows, dataplane->num_flows, sizeof(struct flow_t), flow_cmp);
 

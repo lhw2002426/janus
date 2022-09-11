@@ -66,6 +66,7 @@ static struct criteria_time_t *risk_delay_name_to_func(char const *name) {
     ret->steps = strtoul(tmp, 0, 0);
     ret->cost = _cutoff_zero_cost;
     free(tmp);
+    //printf("ret steps: %d\n",ret->steps);
     return ret;
   }
 
@@ -91,7 +92,7 @@ static struct criteria_time_t *risk_delay_name_to_func(char const *name) {
     panic("Too many numbers passed to cutoff time criteria cost function.  Format is: cutoff-at-[NSTEPS]/STEP1_COST,STEP2_COST,...STEPN_COST: %s", name);
 
   ret->cost = _cutoff_cost;
-
+  //printf("ret steps: %d\n",ret->steps);
   return ret;
 }
 
@@ -185,6 +186,7 @@ static uint32_t
 jupiter_add_freedom_degree(char const *string,
     uint32_t **freedom) {
   unsigned ndegree = 1;
+  //printf("add freedom degree: %s\n",string);
   for (uint32_t i = 0; i < strlen(string); ++i) {
     ndegree += (string[i] == '-');
   }
@@ -200,6 +202,7 @@ jupiter_add_freedom_degree(char const *string,
   }
 
   free(str);
+  printf("add freedom degree: %s degree: %d\n",string,ndegree);
   return ndegree;
 }
 

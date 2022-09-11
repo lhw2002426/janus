@@ -16,6 +16,9 @@
 #include "util/common.h"
 #include "util/log.h"
 
+#include<sys/time.h>
+#include<time.h>
+
 void usage(const char *fname) {
   const char *usage_message = ""
     "usage: %s <experiment-setting ini file> [OPTIONS]\n"
@@ -95,15 +98,23 @@ int main(int argc, char **argv) {
     usage(argv[0]);
     exit(1);
   }
+  int num_threads = get_ncores() - 1;
+  info("nthread: %d",num_threads);
+  clock_t start, end; 
+  start = clock();
 
   struct expr_t expr = {0};
   config_parse(argv[1], &expr, argc - 1, argv + 1);
   struct exec_t *exec = executor(&expr);
-
+  printf("going to exec\n");
   if (!expr.explain) {
+    printf("going to validate\n");
     exec->validate(exec, &expr);
+    printf("validate finished\n");
     struct exec_output_t *out = exec->run(exec, &expr);
+    printf("maybe get output\n");
     if (out) {
+      printf("haven get output\n");
       summarize_result(out);
       array_free(out->result);
       free(out);
@@ -112,6 +123,9 @@ int main(int argc, char **argv) {
   } else {
     exec->explain(exec);
   }
-
+  //printf("exec finished\n");
+  end = clock();
+  printf("time=%f\n", (double)(end - start) / CLOCKS_PER_SEC);
+  info("exec time=%f\n",  (double)(end - start) / CLOCKS_PER_SEC);
   return EXIT_SUCCESS;
 }

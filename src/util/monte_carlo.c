@@ -31,6 +31,7 @@ struct _monte_carlo_parallel_t {
 };
 
 static void _mcpd_rvar_runner(void *data) {
+  //printf("monte carlo run\n");
   struct _monte_carlo_parallel_t *mpcd = (struct _monte_carlo_parallel_t *)data;
   rvar_type_t ret = mpcd->runner(mpcd->data);
   mpcd->vals[mpcd->index] = ret;
@@ -45,7 +46,8 @@ rvar_type_t *monte_carlo_parallel_ordered_rvar(
     if (num_threads == 0)
       num_threads = 1;
   }
-
+  //num_threads = 1;//danger change
+  //info("num_threads: %d\n",num_threads);
   threadpool thpool = thpool_init((int)num_threads);
 
   struct _monte_carlo_parallel_t *mcpd = malloc(sizeof(struct _monte_carlo_parallel_t) * nsteps);
@@ -57,7 +59,7 @@ rvar_type_t *monte_carlo_parallel_ordered_rvar(
     mcpd[i].vals = vals;
     mcpd[i].runner = run;
   }
-
+  //printf("nsteps: %d\n",nsteps);
   for (uint32_t i = 0; i < nsteps; ++i) {
     thpool_add_work(thpool, _mcpd_rvar_runner, &mcpd[i]);
   }
