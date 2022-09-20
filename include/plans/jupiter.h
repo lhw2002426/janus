@@ -13,19 +13,30 @@ enum JUPITER_SWITCH_TYPE {
   JST_CORE, JST_AGG, JST_TOR
 };
 
+enum KLOTSKI_SWITCH_TYPE {
+    EB, FAUU, FADU, FSW, SSW, RSW
+};
 /* Properties that we care about in a jupiter topology for iterating through the plans are:
  * The color, the pod, and the type of the switch. */
 struct jupiter_located_switch_t {
   uint32_t                 sid;    /* Switch ID ... this is MOP specific and
                                       does not map to switch_id_t in
                                       networks/jupiter.h */
-  enum JUPITER_SWITCH_TYPE type;   /* Type of the switch */
+  //enum JUPITER_SWITCH_TYPE type;   /* Type of the switch */
+  uint32_t type;
   uint16_t                 color;  /* Color of the switch---this should be
                                       assigned based on the routing algorithm
                                       and traffic volume (at the edge, i.e.,
                                       ToRs) */
   uint16_t                 pod;    /* Pod number for this switch */
+uint32_t                  dis;
+  double                 traffic;
+  uint32_t*                neighbor_nodes;
+  uint32_t               neighbor_size;
+  uint32_t        stat;
+  void (*klotski_switch_init)(struct jupiter_located_switch_t* ,uint32_t n);
 };
+void _klotski_switch_init(struct jupiter_located_switch_t*, uint32_t);
 
 struct jupiter_class_t {
   struct jupiter_located_switch_t **switches; /* A class is a list of switches

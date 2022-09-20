@@ -190,7 +190,7 @@ _sample_expected(struct rvar_t const *rs) {
 static struct rvar_bucket_t *
 _sample_to_bucket(struct rvar_t const *rs, rvar_type_t bucket_size) {
     struct rvar_sample_t *r = (struct rvar_sample_t *)rs;
-
+    //printf("test in _sample_to_bucket\n");
     // Maximum number of buckets required
     unsigned max_num_buckets = (unsigned)(ceil((r->high - r->low)/bucket_size)) + 1;
     struct array_t *buckets = array_create(sizeof(struct bucket_t), max_num_buckets);
@@ -572,6 +572,7 @@ struct rvar_t *rvar_compose_with_distributions(
 struct rvar_t *rvar_from_buckets(
     struct bucket_t *buckets,
     unsigned nbuckets, rvar_type_t bucket_size) {
+      //printf("test in rvar_from_buckets\n");
   qsort(buckets, nbuckets, sizeof(struct bucket_t), _sort_buckets);
   struct array_t *arr = array_create(sizeof(struct bucket_t), nbuckets);
   struct bucket_t bucket;

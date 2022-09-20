@@ -74,6 +74,7 @@ struct jupiter_switch_mop_t {
     struct jupiter_located_switch_t **switches;
     uint32_t nswitches;
     uint32_t ncap;
+    uint32_t drain[500];
 };
 
 /* A planner has one interface ... a plan iterator that lets us iterate

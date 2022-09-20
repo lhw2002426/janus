@@ -40,7 +40,8 @@ static struct traffic_matrix_trace_iter_t * _pe_cur(
   TO_PI(pi);
   TO_P(iter->predictor);
   struct traffic_matrix_trace_iter_t *titer = pp->trace->iter(pp->trace);
-  trace_iterator_set_range(titer, iter->s+1, iter->e+1);
+  //trace_iterator_set_range(titer, iter->s+1, iter->e+1);
+  trace_iterator_set_range(titer, iter->s, iter->e);
   titer->go_to(titer, iter->s);
   return titer;
 }

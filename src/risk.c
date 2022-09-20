@@ -22,7 +22,7 @@ struct rvar_t *_default_rvar_to_rvar(struct risk_cost_func_t *f, struct rvar_t *
     bucket_size = 1;
 
   struct rvar_t *ret = 0;
-
+  //printf("test in _default_rvar_to_rvar\n");
   if (rvar->_type == SAMPLED) {
     /* If sampled ... do value to value translation */
     struct rvar_sample_t *rs = (struct rvar_sample_t *)rvar;

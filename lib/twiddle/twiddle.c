@@ -3,12 +3,13 @@
 #include <string.h>
 
 #include "twiddle.h"
-
+ 
 void _twiddle_begin(struct twiddle_t *t) {
+
   memset(t->b, 0, sizeof(int) * (unsigned)t->MN);
   memset(t->p, 0, sizeof(int) * (unsigned)(t->MN + 2));
-  memset(t->_tuple, 0, sizeof(int) * (unsigned)t->N);
-
+  memset(t->_tuple, 0, sizeof(unsigned) * (unsigned)t->N);
+  printf("test in twiddle begin m:%d n:%d\n",t->M,t->N);
   t->x = 0; t->y = 0;
   int m  = t->M;
   int n  = t->MN; // Yes, this is correct.
@@ -38,6 +39,7 @@ void _twiddle_begin(struct twiddle_t *t) {
 }
 
 void _twiddle_next(struct twiddle_t *t) {
+  //printf("test in twiddle next\n");
   int *x, *y, *z, *p, *b;
   x = &t->x; y = &t->y; z = &t->z; p = t->p; b = t->b;
 
@@ -96,10 +98,12 @@ void _twiddle_next(struct twiddle_t *t) {
 }
 
 int _twiddle_end(struct twiddle_t *t) {
+  //printf("test in twiddle end\n");
   return t->finished;
 }
 
 void _twiddle_free(struct twiddle_t *t) {
+  //printf("test in twiddle free\n");
   free(t->p);
   free(t->b);
   free(t->_tuple);
@@ -107,6 +111,7 @@ void _twiddle_free(struct twiddle_t *t) {
 }
 
 unsigned *_twiddle_tuple(struct twiddle_t *t) {
+  //printf("test in twiddle tuple\n");
   int *b = t->b;
   int n = t->MN; unsigned *tuple = t->_tuple;
   unsigned ts = t->_tuple_size;
@@ -133,17 +138,21 @@ unsigned _twiddle_tuple_size(struct twiddle_t *t) {
 
 struct twiddle_t *twiddle_create(int M, int N) {
   struct twiddle_t *ret = malloc(sizeof(struct twiddle_t));
+  
   ret->M = M;
   ret->N = N;
 
   // Number of bins
   ret->MN = N + M - 1;
-
+  //printf("test in twiddle create m:%d n:%d\n",ret->M,(unsigned)(ret->N));
   ret->p      = malloc(sizeof(int) * (unsigned)(ret->MN + 2));
-  ret->b      = malloc(sizeof(int) * (unsigned)(ret->MN));
-  ret->_tuple = malloc(sizeof(unsigned) * (unsigned)(ret->N));
+  
+  ret->b      = malloc(sizeof(int) * (unsigned)(ret->MN)*2);
+  
+  ret->_tuple = malloc(sizeof(unsigned) * ((unsigned)(ret->N)));//why fault?
+  
   ret->_tuple_size = (unsigned)ret->N;
-
+  
   // Function pointers
   ret->tuple = _twiddle_tuple;
   ret->tuple_size = _twiddle_tuple_size;

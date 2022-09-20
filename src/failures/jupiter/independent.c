@@ -96,6 +96,8 @@ static void _jii_next(struct failure_scenario_iterator_t *fi) {
   TO_JI(fi);
   TO_JM(fi->model);
   // If we are done, do nothing
+  if(ji->num_active_failures>0)
+    printf("jii next activa failures: %d max concurrent failure: %d\n",ji->num_active_failures,jm->max_concurrent_switch_failure);
   if (ji->num_active_failures > jm->max_concurrent_switch_failure)
     return;
 
@@ -108,6 +110,7 @@ static void _jii_next(struct failure_scenario_iterator_t *fi) {
 
   // Else increase the number of active failures
   ji->num_active_failures += 1;
+  printf("num active failure add\n");
   if (ji->num_active_failures > jm->max_concurrent_switch_failure)
     return;
 

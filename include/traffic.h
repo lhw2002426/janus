@@ -19,6 +19,8 @@ pair_bw_t {
 
   /* Bandwidth used between the pairs */
   bw_t bw;
+  int32_t src, dst;
+    double demand;
 };
 
 struct traffic_matrix_t {
@@ -30,7 +32,10 @@ struct traffic_matrix_t {
   /* Bandwidths between the hosts */
   struct pair_bw_t bws[];
 };
-
+struct pair_t {
+    uint32_t src, dst;
+    double demand;
+};
 // Free the TM memory
 void traffic_matrix_free(struct traffic_matrix_t *);
 

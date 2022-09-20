@@ -188,7 +188,7 @@ _plans_get(struct exec_t *exec, struct expr_t const *expr) {
       printf("%d ",subplans[j]);
     }
     printf("subplans in planget\n");*/
-    if (!expr->criteria_time->acceptable(expr->criteria_time, subplan_count)) {
+    if (!expr->criteria_time->acceptable(expr->criteria_time, subplan_count)&&(expr->criteria_time->steps > 0)) {//lhw change长度为0的时候为不限制长度
       free(subplans);
       continue;
     }
@@ -238,10 +238,11 @@ static struct rvar_t *
 _short_term_risk_using_predictor(struct exec_t *exec, struct expr_t const *expr,
     unsigned subplan, trace_time_t now) {
   TO_PUG(exec);
-  //printf("short term pred!\n");
+  printf("short term pred!\n");
   struct mop_t *mop = pug->iter->mop_for(pug->iter, subplan);
 
   struct predictor_t *pred = pug->pred;
+  printf("now: %d\n",now);
   struct predictor_iterator_t *iter = pred->predict(pred, now, now + expr->mop_duration);
 
   unsigned num_samples = iter->length(iter);
@@ -422,7 +423,7 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
 
   unsigned *subplans = _plans_remaining_subplans(exec);
   int finished = 1;
-
+  printf("test in _exec_pug_find_best_next_subplan\n");
   struct rvar_t **rcache = malloc(sizeof(struct rvar_t *) * pug->plans->_subplan_count);
   //printf("subplan count:%d\n",pug->plans->_subplan_count);
   for (uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
@@ -446,7 +447,7 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
     //printf(" %d \n",i);
     remain_subplan_count += 1;
 
-    finished = 0;
+    //finished = 0;
     /* TODO: This is very hacky atm, but unfortunately, there is not enough
      * time to do it properly. So the idea of this is:
      *
@@ -478,12 +479,24 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
 #endif
 
     // Use the failure model to assess the short-term risk for subplan[i]
-    struct rvar_t *st_risk = expr->failure->apply(
+    struct rvar_t *st_risk;
+    if(expr->network_type == NET_KLOTSKI)
+    {
+      st_risk = rcache[i];
+      //printf("klotski fail : %d, %f\n",i,rcache[i]->expected(rcache[i]));
+    }
+    else{
+      st_risk = expr->failure->apply(
         expr->failure, expr->network, pug->iter, rcache, i);
+        
+    }
+    
 
     risk_cost_t cost = _term_best_plan_to_finish(exec, expr, 
         st_risk, plans->_cur_index + 1, &plan_idx, &plan_length, cur_step, i);
-
+    if(cost>=0)
+      finished = 0;//lhw change 剪枝，只有正的cost可以当做计划
+    printf("term best plan to finish : %f\n",cost);
 #if DEBUG_MODE
     DEBUG("Short Term Cost: %lf", expr->risk_violation_cost->rvar_to_cost(expr->risk_violation_cost, st_risk));
     info("Total cost to finish: %lf", cost);
@@ -516,10 +529,10 @@ _exec_pug_find_best_next_subplan(struct exec_t *exec,
     // info("Expected risk of running subplan %d is %f", i, st_risk->expected(st_risk));
     // Get the best long-term plan to finish subplans[i]
   }
-  //printf("best plan: %d remain_subplan_count: %d\n",best_plan_len,remain_subplan_count);
-  for(uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
+  printf("best plan: %d remain_subplan_count: %d\n",best_plan_len,remain_subplan_count);
+  /*for(uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
     rcache[i]->free(rcache[i]);
-  }
+  }*/
   free(rcache);
 
   if (!finished) {
@@ -576,13 +589,17 @@ _exec_pug_best_plan_at(struct exec_t *exec, struct expr_t const *expr,
    * */
   int first_estimate = 0;
   //struct rvar_t **rcache_lhw = malloc(sizeof(struct rvar_t *) * pug->plans->_subplan_count);
-  //printf("rcache lhw\n");
+  printf("test in _exec_pug_best_plan_at\n");
   while (1) {
-    //printf("find best next subplan! %d\n",plans->_cur_index);
+    printf("find best next subplan! %d\n",plans->_cur_index);
     finished = _exec_pug_find_best_next_subplan(
         exec, expr, at, best_plan_cost, best_plan_len, best_plan_subplans,
         plans->_cur_index);//,rcache_lhw
-
+    for(int i = 0;i<*best_plan_len;i++)
+    {
+      printf("%d ",best_plan_subplans[i]);
+    }
+    printf("best plan in _exec_pug_best_plan_at\n");
 #if DEBUG_MODE
     _print_freedom_plan(exec, expr, *best_plan_len, best_plan_subplans);
 #endif
@@ -600,7 +617,9 @@ _exec_pug_best_plan_at(struct exec_t *exec, struct expr_t const *expr,
       running_cost = *best_plan_cost;
       first_estimate = 1;
     }
-    at += expr->mop_duration;
+    printf("at add: %d!\n",at);
+    if(expr->network_type == NET_JUPITER)
+      at += expr->mop_duration;
   }
   
   /*for(uint32_t i = 0; i < pug->plans->_subplan_count; ++i) {
@@ -740,8 +759,9 @@ _exec_pug_runner(struct exec_t *exec, struct expr_t const *expr) {
     result.num_steps = pug->nmops;
     result.description = 0;
     result.cost = actual_cost;
-
+    
     array_append(res->result, &result);
+    printf("exec end\n");
     pug->release_steady_cost(exec, expr, at);
   }
 
@@ -787,6 +807,7 @@ prepare_steady_cost_static(struct exec_t *exec, struct expr_t const *expr, trace
   // Load the steady_packet_loss data
   unsigned subplan_count = 0;
   pug->steady_packet_loss = exec_rvar_cache_load(expr, &subplan_count);
+  printf("test in prepare_steady_cost_static\n");
   if (pug->steady_packet_loss == 0)
     panic_txt("Couldn't load the long-term RVAR cache.");
 
@@ -816,7 +837,17 @@ prepare_steady_cost_static(struct exec_t *exec, struct expr_t const *expr, trace
 
   struct plan_iterator_t *iter = pug->planner->iter(pug->planner);
   for (uint32_t i = 0; i < subplan_count; ++i) {
-    pug->steady_cost[i] = expr->failure->apply(expr->failure, expr->network, iter, rcache, i);
+    if(expr->network_type == NET_KLOTSKI)
+    {
+      pug->steady_cost[i] = rcache[i];
+      //printf("klotski fail : %d, %f\n",i,rcache[i]->expected(rcache[i]));
+    }
+    else{
+      pug->steady_cost[i] = expr->failure->apply(
+        expr->failure, expr->network,
+        pug->iter, rcache, i);
+        
+    }
     if (expr->verbose >= VERBOSE_MORE_INFO) {
       info("Expected cost before failure considerations %d: %f, after: %f", 
           i, rcache[i]->expected(rcache[i]), 
@@ -902,9 +933,18 @@ prepare_steady_cost_dynamic(struct exec_t *exec, struct expr_t const *expr, trac
 
   /* Apply the failure model to long term plans */
   for (uint32_t i = 0; i < subplan_count; ++i) {
-    pug->steady_cost[i] = expr->failure->apply(
+    if(expr->network_type == NET_KLOTSKI)
+    {
+      pug->steady_cost[i] = rcache[i];
+      //printf("klotski fail : %d, %f\n",i,rcache[i]->expected(rcache[i]));
+    }
+    else{
+      pug->steady_cost[i] = expr->failure->apply(
         expr->failure, expr->network,
         pug->iter, rcache, i);
+        
+    }
+    
   }
 
   for (uint32_t i = 0; i < subplan_count; ++i) {
@@ -919,15 +959,19 @@ release_steady_cost_dynamic(struct exec_t *exec, struct expr_t const *expr, trac
   // Things are already released no need to do anything about them.
   if (!pug->steady_packet_loss)
     return;
-
+  printf("subplan count:%d\n",pug->plans->_subplan_count);
   for (int i = 0; i < pug->plans->_subplan_count; ++i) {
+    
     struct rvar_t *rv = pug->steady_packet_loss[i];
+    
     rv->free(rv);
-
-    rv = pug->steady_cost[i];
+    if(expr->network_type == NET_KLOTSKI)
+      continue;
+    rv = pug->steady_cost[i];//在klotski中steady cost直接等于rcache所以可能直接free掉了
     rv->free(rv);
+    printf("test in release_steady_cost_dynamic\n");
   }
-
+  
   free(pug->steady_packet_loss);
   free(pug->steady_cost);
 

@@ -25,6 +25,7 @@ struct rvar_t *failure_default_apply(
   struct array_t *arr_dists = array_create(sizeof(rvar_type_t), 10);
   struct array_t *arr_rvs = array_create(sizeof(struct rvar_t *), 10);
   int debug_cnt = 0;
+  printf("test in failure_default_apply\n");
   for (fi->begin(fi); !fi->end(fi); fi->next(fi)) {
     debug_cnt++;
     double prob = fi->prob(fi);
@@ -33,7 +34,7 @@ struct rvar_t *failure_default_apply(
     prob_sum += prob;
     struct rvar_t *rv = fi->cost(fi);
 
-    array_append(arr_rvs, (void *)&rv);
+    array_append(arr_rvs, (void *)&rv);//这个地方数组大小爆了，还没有发现问题
     array_append(arr_dists, (void *)&prob);
   }
   //printf("deal fail debug count: %d\n",debug_cnt);

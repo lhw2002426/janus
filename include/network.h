@@ -5,6 +5,7 @@
 #include "dataplane.h"
 #include "plan.h"
 #include "traffic.h"
+#include "config.h"
 
 struct network_t;
 typedef uint32_t network_steps_t;
@@ -17,6 +18,7 @@ typedef int (*get_traffic_t) (struct network_t *, struct traffic_matrix_t const*
 typedef int (*get_dataplane_t) (struct network_t *, struct dataplane_t *);
 
 struct network_t {
+  enum EXPR_NETWORK_TYPE       network_type;
   /* Set the traffic of the network (for that specific step) */
   set_traffic_t           set_traffic;
 
@@ -36,6 +38,7 @@ struct network_t {
 
   bw_t (*pod_capacity) (struct network_t *);
   bw_t (*core_capacity) (struct network_t *);
+  void (*copy_switches)(struct klotski_network_t*, struct klotski_located_switch_t* sws);
 };
 
 /*

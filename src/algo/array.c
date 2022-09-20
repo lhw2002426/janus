@@ -104,7 +104,7 @@ inline void array_append(struct array_t *arr, void *data) {
   while (arr->capacity <= arr->count) {
     if (arr->capacity == 0)
       arr->capacity += 1;
-
+    //printf("arr capacity:%d arr count: %d\n",arr->capacity,arr->count);
     arr->capacity *= 2;
     arr->data = realloc(arr->data, arr->capacity * arr->data_size);
     if (!arr->data)

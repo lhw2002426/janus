@@ -178,7 +178,7 @@ jupiter_network_create(
     sizeof(struct switch_stats_t) * _num_switches(core, pod, agg_per_pod, tor_per_pod) +\
     sizeof(struct jupiter_network_t);
   struct jupiter_network_t *ret = malloc(mem_size);
-
+  ret->network_type = NET_JUPITER;
   /* Set variables */
   ret->switches = (struct switch_stats_t *)ret->end;
   ret->core_ptr = ret->switches;
@@ -212,12 +212,18 @@ jupiter_network_create(
 
 void jupiter_drain_switch(struct network_t *net, switch_id_t id) {
   TO_J(net);
-  jup->switches[id].stat = DOWN;
+  if(net->network_type == NET_KLOTSKI)
+    jup->klotski_switches[id].stat = DOWN;
+  else
+    jup->switches[id].stat = DOWN;
 }
 
 void jupiter_undrain_switch(struct network_t *net, switch_id_t id) {
   TO_J(net);
-  jup->switches[id].stat = UP;
+  if(net->network_type == NET_KLOTSKI)
+    jup->klotski_switches[id].stat = UP;
+  else
+    jup->switches[id].stat = UP;
 }
 
 int jupiter_get_dataplane(struct network_t *net, struct dataplane_t *dp) {
@@ -324,4 +330,222 @@ switch_id_t jupiter_get_agg(struct network_t *net, uint32_t pod, uint32_t num) {
   assert(pod < jup->pod);
   assert(num < jup->agg);
   return pod * jup->agg + num + jup->core;
+}
+enum KLOTSKI_SWITCH_TYPE get_type(char* s)
+{
+    if (!strcmp(s, "EB"))
+        return EB;
+    if (!strcmp(s, "FAUU"))
+        return FAUU;
+    if (!strcmp(s, "FADU"))
+        return FADU;
+    if (!strcmp(s, "SSW"))
+        return SSW;
+    if (!strcmp(s, "FSW"))
+        return FSW;
+    if (!strcmp(s, "RSW"))
+        return RSW;
+}
+
+void klotski_get_dataplane(struct jupiter_network_t* net,struct dataplan_t* dp)
+{
+    printf("dataplane get begin\n");
+    /* Initialize dataplane */
+    dataplane_init(dp);
+    net->pair_num = 0;
+    //struct pair_bw_t const* pair = net->tm->bws; todo
+    //pair_id_t num_tors = net->tors;
+    //assert(net->tm->num_pairs == num_tors * num_tors);
+    struct pair_bw_t const *pair = net->tm->bws;
+    printf("test pair:%f \n",pair->bw);
+    pair_id_t num_tors = net->num_switches;
+    printf("dataplan test\n");
+    for (pair_id_t s = 0; s < num_tors; ++s) {
+        for (pair_id_t d = 0; d < num_tors; ++d) {
+          
+        // No need to setup pair routing if there is no traffic.
+        if (pair->bw == 0) {
+            pair++; continue;
+        }
+        //printf("src: %d dst: %d bw: %f\n",s,d,pair->bw);
+        net->pairs[net->pair_num] = (struct pair_t*)malloc(sizeof(struct pair_t));
+        net->pairs[net->pair_num]->src = s;//sid
+        net->pairs[net->pair_num]->dst = d;
+        net->pairs[net->pair_num]->demand = pair->bw;
+        net->pair_num++;
+        pair++;
+        }
+    }
+    printf("dataplane get end\n");
+    return;
+}
+
+struct klotski_network_t*
+    klotski_network_create(const char* path1, const char* path2, uint32_t nswitch, uint32_t nedge,float alpha,float theta){
+      printf("test in klotski network create\n");
+    struct jupiter_network_t* ret = (struct jupiter_network_t*)malloc(sizeof(struct jupiter_network_t));
+    ret->network_type = NET_KLOTSKI;
+    ret->alpha = alpha;
+    ret->theta = theta;
+    klotski_net_init(ret,nswitch);
+    char name[500][20], id[500];
+    FILE* fp = fopen(path1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "fopen() failed.\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    char row[100];
+    char* token;
+    int i = 0;
+    fgets(row, 100, fp);
+    fgets(row, 100, fp);
+    while (fgets(row, 100, fp) != NULL) {
+        //printf("Row: %s", row);
+        token = strtok(row, ",");
+        //printf("Token: %s %d\n", token, strlen(token));
+        //name[i] = (char*)malloc(strlen(token));
+        strcpy(name[i], token);
+        //name[i] = token;
+        token = strtok(NULL, ",");
+        //ret->types[i] = get_type(token);
+        ret->klotski_switches[i].type = get_type(token);
+        //printf("token:%s type: %d\n",token,ret->types[i]); 
+        i++;
+    }
+    fclose(fp);
+
+    char* src;
+    char* dst;
+    uint32_t  s, d;
+    double demand;
+    fp = fopen(path2, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "fopen() failed.\n");
+        exit(EXIT_FAILURE);
+    }
+    fgets(row, 100, fp);
+    fgets(row, 100, fp);
+    for (int i = 0; i < nedge; i++)
+    {
+        char row[100];
+        char* token;
+        if (fgets(row, 100, fp) == NULL)
+            return NULL;
+        //printf("Row: %s", row);
+        token = strtok(row, ",");
+        //printf("Token: %s\n", token);
+        src = token;
+        token = strtok(NULL, ",");
+        //printf("Token: %s\n", token);
+        dst = token;
+        token = strtok(NULL, ",");
+        //printf("Token: %s\n", token);
+        demand = atof(token);
+        token = strtok(NULL, ",");
+        //scanf("%s %s %d", src, dst, &demand);
+        for (int j = 0; j < nswitch; j++)
+        {
+            if (!strcmp(name[j], src))
+            {
+                s = j;
+            }
+            if (!strcmp(name[j], dst))
+            {
+                d = j;
+            }
+        }
+        ret->build_edge(ret,s, d, demand);
+        //ret->build_edge(d, s, demand);
+    }
+    fclose(fp);
+    return ret;
+}
+
+void klotski_net_init(struct jupiter_network_t* net, uint32_t n) {
+    memset(net->cap, 0, sizeof(net->cap));
+    memset(net->used, 0, sizeof(net->used));
+    memset(net->edge_traffic, 0, sizeof(net->edge_traffic));
+    net->num_switches = n;
+    net->klotski_switches = (struct jupiter_located_switch_t*)malloc(n * sizeof(struct jupiter_located_switch_t));
+    for (int i = 0; i < n; i++)
+    {
+        _klotski_switch_init(&net->klotski_switches[i], n);
+        net->klotski_switches[i].sid = i;
+    }
+    net->set_traffic     = jupiter_set_traffic;
+    net->get_traffic     = jupiter_get_traffic;
+    net->get_dataplane   = klotski_get_dataplane;
+    net->drain_switch    = jupiter_drain_switch;;
+    net->undrain_switch  = jupiter_undrain_switch;
+    net->free            = klotski_network_free;
+
+    net->clear = _clear;
+    net->clear_dis = _clear_dis;
+    net->get_sw = _get_sw;
+    net->build_edge = _build_edge;
+    net->copy_switches = _copy_switches;
+}
+void klotski_network_free(struct jupiter_network_t* net)
+{
+  printf("test in klotski net free\n");
+  for(int i = 0;i<net->num_switches;i++)
+  {
+    free(net->klotski_switches[i].neighbor_nodes);
+  }
+  free(net->klotski_switches);
+  for(int i = 0;i<net->pair_num;i++)
+  {
+    free(net->pairs[i]);
+  }
+  free(net);
+}
+void _clear(struct jupiter_network_t*net)
+{
+    memset(net->edge_traffic, 0, sizeof(net->edge_traffic));
+    for (int i = 0; i < net->num_switches; i++)
+    {
+        net->klotski_switches[i].traffic = 0;
+        net->klotski_switches[i].dis = 0;
+    }
+}
+void _clear_dis(struct jupiter_network_t*net)
+{
+    for (int i = 0; i < net->num_switches; i++)
+    {
+        net->klotski_switches[i].dis = 0;
+    }
+}
+
+struct jupiter_located_switch_t* _get_sw(struct jupiter_network_t*net, uint32_t id)
+{
+    for (int i = 0; i < net->num_switches; i++)
+    {
+        if (net->klotski_switches[i].sid == id)
+            return &net->klotski_switches[i];
+    }
+    //printf("didnt find switches\n");
+}
+void _build_edge(struct jupiter_network_t*net, uint32_t src, uint32_t dst, double capacity)
+{
+    //jupiter_located_switch_t* s = get_sw(src);
+    //jupiter_located_switch_t* d = get_sw(dst);
+    net->klotski_switches[src].neighbor_nodes[net->klotski_switches[src].neighbor_size++] = dst;
+    net->klotski_switches[dst].neighbor_nodes[net->klotski_switches[dst].neighbor_size++] = src;
+    net->cap[src][dst] = net->cap[dst][src] = capacity;
+}
+void _copy_switches(struct jupiter_network_t*net, struct jupiter_located_switch_t* sws,int n)
+{
+    printf("copy switces\n");
+   
+    for (int i = 0; i < n; i++)
+    {
+        //printf("%d %d %d %d\n",sws[i].sid,sws[i].stat,sws[i].type,sws[i].pod);
+        uint32_t j = sws[i].sid;
+        net->klotski_switches[j].sid = sws[i].sid;
+        net->klotski_switches[j].color = sws[i].color;
+        net->klotski_switches[j].type = sws[i].type;
+        net->klotski_switches[j].stat = sws[i].stat;
+        net->klotski_switches[j].pod = sws[i].pod;
+    }
 }

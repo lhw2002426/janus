@@ -7,7 +7,7 @@
 #include "traffic.h"
 
 struct jupiter_sw_up_t {
-  enum JUPITER_SWITCH_TYPE type;
+  uint32_t type;
   unsigned location; unsigned count; unsigned color;
 };
 
@@ -36,6 +36,7 @@ struct expr_execution_t {
 
 enum EXPR_NETWORK_TYPE {
   NET_JUPITER = 0, // Jupiter network
+  NET_KLOTSKI = 1,
 };
 
 enum EXPR_ACTION {

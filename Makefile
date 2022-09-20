@@ -47,14 +47,14 @@ ifeq (test, $(firstword $(MAKECMDGOALS)))
 OPT = -O0 -pg -g
 endif
 
-CFLAGS=$(OPT) $(DEFINE) -Wall -Werror \
+CFLAGS=$(OPT) $(DEFINE) -Wall \
 			-pedantic -Wsign-conversion\
 			-Wno-unused-function\
 			-Iinclude/ -std=$(STD) -Ilib/ \
 			-fms-extensions \
 			-mtune=native $(OSCFLAGS)
 
-LDFLAGS=-lm $(OPT) $(DEFINE) -Wall -Werror\
+LDFLAGS=-lm $(OPT) $(DEFINE) -Wall\
 				-pedantic -Wsign-conversion\
 				-Wno-unused-function -Wno-nested-anon-types -Wno-keyword-macro\
 			 	-Iinclude/ -Ilib/ -std=$(STD) -flto \

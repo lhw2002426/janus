@@ -12,6 +12,14 @@
 static struct plan_iterator_t* jupiter_switch_plan_enumerator_iterator(
     struct plan_t *planner);
 
+void _klotski_switch_init(struct jupiter_located_switch_t* sw, uint32_t n)
+{
+    sw->neighbor_size = 0;
+    sw->neighbor_nodes = (uint32_t*)malloc(n * sizeof(uint32_t));
+    sw->dis = 0;
+    sw->traffic = 0;
+    sw->stat = UP;
+}
 static struct jupiter_group_t *
 _jupiter_get_group_for(struct jupiter_multigroup_t *mg,
     struct jupiter_located_switch_t *sw) {
@@ -160,30 +168,76 @@ void _sup_free(struct plan_iterator_t *iter) {
 static
 void _jupiter_mop_free(struct mop_t *mop) {
   struct jupiter_switch_mop_t *jop = (struct jupiter_switch_mop_t *)mop;
+  for(int i = 0;i<jop->nswitches;i++)
+  {
+    printf("%d ",jop->drain[i]);
+  }
+  printf("mop free\n");
   free(jop->switches);
+  /*if(jop->nswitches>0)
+  {
+    printf("free drain\n");
+    free(jop->drain);
+  }*/   
   free(jop);
 }
 
 static
-int _jupiter_mop_pre(struct mop_t *mop, struct network_t *net) {
-  int debugout = 1;
-  struct jupiter_network_t *jup = (struct jupiter_network_t *)net;
-  struct jupiter_switch_mop_t *jop = (struct jupiter_switch_mop_t *)mop;
-  (void)(jup); (void)(jop);
-  //printf("drain nswitches: %d\n",jop->nswitches);
-  for (uint32_t i = 0; i < jop->nswitches; ++i) {
-    struct jupiter_located_switch_t *sw = jop->switches[i];
-    (void)(sw);
-    jup->drain_switch((struct network_t *)jup, sw->sid);
-    //printf("drain sid: %d pod: %d\n",sw->sid,sw->pod);
-    debugout = 0;
-    
+float _jupiter_mop_pre(struct mop_t *mop, struct network_t *net) {//改成了float,为了和klotski的mop pre统一
+  if(net->network_type == NET_JUPITER)
+  {
+    printf("jupiter mop pre\n");
+    int debugout = 1;
+    struct jupiter_network_t *jup = (struct jupiter_network_t *)net;
+    struct jupiter_switch_mop_t *jop = (struct jupiter_switch_mop_t *)mop;
+    (void)(jup); (void)(jop);
+    //printf("drain nswitches: %d\n",jop->nswitches);
+    for (uint32_t i = 0; i < jop->nswitches; ++i) {
+      struct jupiter_located_switch_t *sw = jop->switches[i];
+      (void)(sw);
+      //printf("drain test\n");
+      jup->drain_switch((struct network_t *)jup, sw->sid);
+      //printf("drain sid: %d pod: %d\n",sw->sid,sw->pod);
+      debugout = 0;
+      
+    }
+    //jup->drain_switch((struct network_t *)jup, 4);//danger change
+    //printf("new drain: 4\n");
+    return 0;
   }
-  //jup->drain_switch((struct network_t *)jup, 4);//danger change
-  //printf("new drain: 4\n");
-  return 0;
+  else{
+    printf("kloski mop pre\n");
+    struct jupiter_network_t* kup = (struct jupiter_network_t*)net;
+    struct jupiter_switch_mop_t *kop = (struct jupiter_switch_mop_t *)mop;
+    uint32_t switches_update_type[6];
+    memset(switches_update_type, 0, sizeof(switches_update_type));
+    float cost = kop->nswitches;
+    (void)(kup);
+    //printf("test\n");
+    //printf("kop nswitches: %d\n",kop->nswitches);
+    for (uint32_t i = 0; i < kop->nswitches; ++i) {
+        //printf("drain: %d\n",kop->drain[i]);
+        struct jupiter_located_switch_t sw = kup->klotski_switches[kop->drain[i]];
+        //printf("test\n");
+        (void)(sw);
+        
+        kup->drain_switch(kup, sw.sid);
+        switches_update_type[sw.type] = 1;
+    }
+    /*if (switches_update_type[last_type] == 1)//lhw问题，是否要考虑last type
+    {
+        switches_update_type[last_type] = 0;
+    }*/
+    //对janus最有利的cost计算，依次drain/undrain相同类型的switch
+    for (int i = 0; i < 6; i++)
+    {
+        cost += switches_update_type[i] * kup->alpha;
+    }
+    cost *= 2;//drain undrain分别做一次
+    return cost;
+  }
+  
 }
-
 static
 unsigned _jupiter_mop_size(struct mop_t *mop) {
   struct jupiter_switch_mop_t *jop = (struct jupiter_switch_mop_t *)mop;
@@ -353,11 +407,13 @@ struct mop_t *_sup_mop_for(struct plan_iterator_t *iter, unsigned id) {
   struct jupiter_switch_mop_t  *mop = malloc(sizeof(struct jupiter_switch_mop_t));
   mop->ncap = DEFAULT_CAP_SIZE;
   mop->switches = malloc(sizeof(struct jupiter_located_switch_t *) * mop->ncap);
+  //mop->drain = malloc(sizeof(uint32_t)* (mop->ncap));
+  printf("drain num:%d ncap: %d\n",strlen(mop->drain),mop->ncap);
   mop->nswitches = 0;
   jiter->state->to_tuple(jiter->state, id, jiter->_tuple_tmp);
-  /*for (uint32_t i = 0; i < jiter->state->tuple_size; ++i)
+  for (uint32_t i = 0; i < jiter->state->tuple_size; ++i)
     printf("%d ",jiter->_tuple_tmp[i]);
-  printf("tuple tmp\n");*/
+  printf("tuple tmp\n");
   struct jupiter_group_t *groups = jiter->planner->multigroup.groups;
   for (uint32_t i = 0; i < jiter->state->tuple_size; ++i) {
     struct jupiter_group_t *group = &groups[i];
@@ -387,8 +443,10 @@ struct mop_t *_sup_mop_for(struct plan_iterator_t *iter, unsigned id) {
       }
 
       for (uint32_t k = 0; k < sw_to_up; ++k) {
-        mop->switches[mop->nswitches++] = class->switches[k];
-        //printf("mop for switches id: %d pod: %d\n",class->switches[k]->sid,class->switches[k]->pod);
+        mop->drain[mop->nswitches] = class->switches[k]->sid;
+        mop->switches[mop->nswitches] = class->switches[k];
+        //printf("mopfor switches id: %d pod: %d\n",mop->drain[mop->nswitches],class->switches[k]->pod);
+        mop->nswitches++;
       }
     }
   }
@@ -520,13 +578,17 @@ jupiter_mop_for(struct jupiter_located_switch_t **sws, uint32_t nsws) {
 
   mop->ncap = nsws;
   mop->switches = malloc(sizeof(struct jupiter_located_switch_t *) * nsws);
+  //mop->drain = malloc(sizeof(uint32_t)*nsws);
   mop->nswitches = nsws;
 
   for (uint32_t i = 0; i < nsws; ++i) {
     mop->switches[i] = sws[i];
+    printf("%d ",sws[i]->sid);
+    mop->drain[i] = sws[i]->sid;//todo 对sws代表的是一个switch还是一群有误解
     //printf("id: %d pod: %d",sws[i]->sid,sws[i]->pod);
-    //printf("jupiter mopfor\n");
+    
   }
+  //printf("jupiter mopfor\n");
   
   return (struct mop_t *)mop;
 }
