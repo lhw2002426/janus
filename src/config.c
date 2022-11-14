@@ -169,6 +169,7 @@ static struct network_t *string_to_network(struct expr_t const *expr, char const
     char* path2;
     char* temp_info;
     float alpha,theta;
+    int flag = 0;
     uint32_t nswitch,nedge;
     path1 = strtok(network_info,"&&");
     //printf("path1: %s\n",path1);
@@ -176,9 +177,9 @@ static struct network_t *string_to_network(struct expr_t const *expr, char const
     //printf("path2: %s\n",path2);
     temp_info = strtok(NULL,"&&");
     //printf("info: %s\n",temp_info);
-    sscanf(temp_info,"%u|%u|%f|%f%n",&nswitch,&nedge,&alpha,&theta,&tot_read);
+    sscanf(temp_info,"%u|%u|%f|%f|%d%n",&nswitch,&nedge,&alpha,&theta,&flag,&tot_read);
     //printf("%d %d %f %f\n",nswitch,nedge,alpha,theta);
-    return (struct network_t *)klotski_network_create(path1,path2,nswitch,nedge,alpha,theta);
+    return (struct network_t *)klotski_network_create(path1,path2,nswitch,nedge,alpha,theta,flag);
   }
 }
 
@@ -201,27 +202,40 @@ static struct network_t *expr_clone_network(struct expr_t const *expr) {
   return string_to_network(expr, expr->network_string);
 }
 
-static void jupiter_add_upgrade_group(char const *string, struct jupiter_sw_up_list_t *list,enum EXPR_NETWORK_TYPE net_type) {
+static void jupiter_add_upgrade_group(char const *string, struct jupiter_sw_up_list_t *list,enum EXPR_NETWORK_TYPE net_type,int flag) {
   int tot_read;
   char sw_type[256] = {0};
-  unsigned location, count, color;
-
-  if (sscanf(string, "%[^-]-%u-%u-%u%n", sw_type, &location, &count, &color, &tot_read) <= 0) {
-    panic("Bad format specifier for jupiter: %s", string);
+  unsigned location, count, color, label = 1;
+  if(net_type == NET_KLOTSKI && flag == 3)
+  {
+    if (sscanf(string, "%[^-]-%u-%u-%u-%u%n", sw_type, &location, &count, &color, &label, &tot_read) <= 0) {
+      panic("Bad format specifier for jupiter: %s", string);
+    }
+    //printf("test\n");
   }
-
+  else
+  {
+    if (sscanf(string, "%[^-]-%u-%u-%u%n", sw_type, &location, &count, &color, &tot_read) <= 0) {
+      panic("Bad format specifier for jupiter: %s", string);
+    }
+    //printf("%s %u %u %u\n",sw_type, location, count, color);
+  }
+    
   if (tot_read < strlen(string)) {
     panic("Bad format specifier for switch-upgrade: %s", string);
   }
 
   list->size += 1;
   list->sw_list = realloc(list->sw_list, sizeof(struct jupiter_sw_up_t) * list->size);
+  
   list->num_switches += count;
+  printf("count: %d numswitch: %d\n",count,list->num_switches);
 
   struct jupiter_sw_up_t *up = &list->sw_list[list->size-1];
   up->count = count;
   up->location = location;
   up->color = color;
+  up->label = label;
   if(net_type == NET_JUPITER)
   {
     if (strcmp(sw_type, "core") == 0) {
@@ -245,6 +259,14 @@ static void jupiter_add_upgrade_group(char const *string, struct jupiter_sw_up_l
       up->type = FSW;
     } else if (strcmp(sw_type, "RSW") == 0) {
       up->type = RSW;
+    } else if (strcmp(sw_type, "UNFAUU") == 0) {
+      up->type = UNFAUU;
+    } else if (strcmp(sw_type, "UNFADU") == 0) {
+      up->type = UNFADU;
+    } else if (strcmp(sw_type, "UNFSW") == 0) {
+      up->type = UNFSW;
+    } else if (strcmp(sw_type, "UNSSW") == 0) {
+      up->type = UNSSW;
     } else {
       panic("Bad switch type specified: %s", sw_type);
     }
@@ -340,6 +362,7 @@ static int config_handler(void *data,
     expr->network_string = strdup(value);
     printf("network string: %s %d\n",expr->network_string,sizeof(expr->network_string));
     expr->network = string_to_network(expr, value);
+    printf("test in config\n");
     if(expr->network->network_type == NET_JUPITER)
     {
       _expr_jupiter_network_set_variables(expr);
@@ -356,8 +379,9 @@ static int config_handler(void *data,
       printf("prase switches\n");
     }
   } else if (MATCH_SECTION("upgrade")) {
+    struct jupiter_network_t* jn = (struct jupiter_network_t*)expr->network;
     if (MATCH_NAME("switch-group")) {
-      jupiter_add_upgrade_group(value, &expr->upgrade_list,expr->network_type);
+      jupiter_add_upgrade_group(value, &expr->upgrade_list,expr->network_type,jn->flag);
     } else if (MATCH_NAME("freedom")) {
       expr->upgrade_nfreedom = jupiter_add_freedom_degree(value, &expr->upgrade_freedom);
     } else {
@@ -408,12 +432,15 @@ _jupiter_build_located_switch_group(struct expr_t *expr) {
   }
   expr->located_switches = sws;
   expr->nlocated_switches = nswitches;
+  
 }
 static void
 _klotski_build_located_switch_group(struct expr_t* expr) {
     //TODO: Assume klotski network for now.
     printf("build klotski group\n");
     unsigned nswitches = 0;
+    unsigned label_num = 0,labels[1001];
+    memset(labels,0,sizeof(labels));
     for (uint32_t i = 0; i < expr->upgrade_list.size; ++i) {
         nswitches += expr->upgrade_list.sw_list[i].count;
         //struct klotski_sw_up_t *up = &expr->upgrade_list.sw_list[i];
@@ -429,6 +456,13 @@ _klotski_build_located_switch_group(struct expr_t* expr) {
             sws[idx].stat = UP;
             sws[idx].type = up->type;
             sws[idx].pod = up->location;
+            sws[idx].label = up->label;
+            //printf("sws labels: %d\n",up->label);
+            if(labels[up->label] == 0)
+            {
+              labels[up->label] = 1;
+              label_num++;
+            }
             sws[idx].sid = klotski_get_id(expr->network, up->type);
             idx++;
         }
@@ -436,6 +470,7 @@ _klotski_build_located_switch_group(struct expr_t* expr) {
     
     expr->located_switches = sws;
     expr->nlocated_switches = nswitches;//lhw注意expr的nswitch和net的nswitch是不同的，因为EB和RSW不在搜索的范围之内
+    expr->label_num = label_num;
     for(int i = 0;i<nswitches;i++)//lhw不知道为什么，不加这段输出就会报错，太玄学了
     {
       printf("%d %d %d %d\n",sws[i].sid,sws[i].stat,sws[i].type,sws[i].pod);
@@ -492,6 +527,7 @@ cmd_parse(int argc, char *const *argv, struct expr_t *expr) {
         expr->verbose += 1;
     };
   }
+  //printf("explan: %d\n",expr->explain);
   return 1;
 }
 

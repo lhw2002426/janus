@@ -14,7 +14,7 @@ enum JUPITER_SWITCH_TYPE {
 };
 
 enum KLOTSKI_SWITCH_TYPE {
-    EB, FAUU, FADU, FSW, SSW, RSW
+    EB, FAUU, FADU, FSW, SSW, RSW, UNFAUU, UNFADU, UNFSW, UNSSW,
 };
 /* Properties that we care about in a jupiter topology for iterating through the plans are:
  * The color, the pod, and the type of the switch. */
@@ -28,6 +28,7 @@ struct jupiter_located_switch_t {
                                       assigned based on the routing algorithm
                                       and traffic volume (at the edge, i.e.,
                                       ToRs) */
+  uint16_t                label;
   uint16_t                 pod;    /* Pod number for this switch */
 uint32_t                  dis;
   double                 traffic;

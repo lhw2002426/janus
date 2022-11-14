@@ -77,7 +77,7 @@ static void _build_rvar_cache_parallel(struct expr_t const *expr) {
         expr->upgrade_nfreedom);
 
   struct traffic_matrix_trace_t *trace = traffic_matrix_trace_load(400, expr->traffic_test);
-  struct plan_iterator_t *iter = en->iter((struct plan_t *)en);
+  struct plan_iterator_t *iter = en->iter((struct plan_t *)en,expr);
   unsigned subplan_count = (unsigned)iter->subplan_count(iter);
   pthread_mutex_t mut;
 
@@ -86,7 +86,7 @@ static void _build_rvar_cache_parallel(struct expr_t const *expr) {
 
   uint32_t trace_length = trace->num_indices;
   uint32_t nthreads = get_ncores() - 1;
-  //nthreads = 1;//danger change
+  nthreads = 1;//danger change
   struct freelist_repo_t *repo = freelist_create(nthreads);
   struct _network_dp_t *networks = malloc(sizeof(struct _network_dp_t) * nthreads);
   char path[PATH_MAX] = {0};
@@ -180,6 +180,7 @@ _exec_longterm_runner(struct exec_t *exec, struct expr_t const *expr) {
 
 static void
 _exec_longterm_validate(struct exec_t *exec, struct expr_t const *expr) {
+  printf("dictory : %s\n",expr->cache.rvar_directory);
   EXEC_VALIDATE_STRING_SET(expr, cache.rvar_directory);
   if (expr->cache.subplan_start == expr->cache.subplan_end && expr->cache.subplan_end != 0) {
     panic_txt("Start and end duration are equal.");

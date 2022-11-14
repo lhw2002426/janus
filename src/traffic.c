@@ -46,17 +46,17 @@ void _tmti_go_to(struct traffic_matrix_trace_iter_t *iter, trace_time_t time) {
 }
 
 int _tmti_end(struct traffic_matrix_trace_iter_t *iter) {
-    printf("tmti state:%d end: %d\n",iter->state,iter->_end);
+    //printf("tmti state:%d end: %d\n",iter->state,iter->_end);
     return iter->state >= iter->_end; 
 }
 
 void _tmti_get(struct traffic_matrix_trace_iter_t *iter, struct traffic_matrix_t **tm) {
     trace_time_t time;
     //printf("trace: %d state: %d\n",iter->trace, iter->state);
-    printf("tmti get\n");
+    //printf("tmti get\n");
     if (traffic_matrix_trace_get_nth_key(iter->trace, iter->state, &time) != SUCCESS) {
         *tm = 0;
-        printf("get traffic failed!\n");
+        //printf("get traffic failed!\n");
         return;
     }
     traffic_matrix_trace_get(iter->trace, time, tm);
@@ -82,7 +82,7 @@ static struct traffic_matrix_trace_iter_t *_tmt_iter(
 
     iter->_begin = 0;
     iter->_end = trace->num_indices;
-    printf("end by indices: %d\n",trace->num_indices);
+    //printf("end by indices: %d\n",trace->num_indices);
 
     return iter;
 }
@@ -95,7 +95,7 @@ void trace_iterator_set_range(struct traffic_matrix_trace_iter_t *iter,
   iter->_begin = begin;
   iter->state = iter->_begin;
   iter->_end = end;
-  printf("trace_iterator_set_range end: %d\n",end);
+  //printf("trace_iterator_set_range end: %d\n",end);
 }
 
 void traffic_matrix_save(struct traffic_matrix_t *tm, FILE * f) {
@@ -415,7 +415,7 @@ struct traffic_matrix_trace_t *traffic_matrix_trace_create(
   trace->cap_indices = cap_indices;
   trace->largest_seek = 0;
   trace->iter = _tmt_iter;
-
+  
   if (name != 0) {
     char fname[PATH_MAX] = {0};
     char fdata[PATH_MAX] = {0};
@@ -507,8 +507,9 @@ struct traffic_matrix_trace_t *traffic_matrix_trace_load(
   }
 
   uint64_t indices = _traffic_matrix_trace_index_count(index);
-  printf("indices: %d\n",indices);
+  //printf("indices: %d\n",indices);
   struct traffic_matrix_trace_t *trace = traffic_matrix_trace_create(num_caches, indices, 0);
+  //printf("test\n");
   trace->fdata = data;
   trace->num_indices = indices;
   trace->findex = index;
@@ -520,7 +521,7 @@ struct traffic_matrix_trace_t *traffic_matrix_trace_load(
 
 void traffic_matrix_trace_print_index(struct traffic_matrix_trace_t *t) {
   for (uint64_t i = 0; i < t->num_indices; ++i) {
-    //struct traffic_matrix_trace_index_t *index = &t->indices[i];
+    struct traffic_matrix_trace_index_t *index = &t->indices[i];
     //printf("indices are: %lu  @%lu [:%lu]\n", index->size, index->time, index->seek);
   }
 }
@@ -571,7 +572,7 @@ struct traffic_matrix_t *traffic_matrix_zero(pair_id_t num_pairs) {
 int traffic_matrix_trace_get_nth_key(
     struct traffic_matrix_trace_t *trace,
     uint32_t index, trace_time_t *ret) {
-  printf("get_nth_key index: %d indices %d\n",index,trace->num_indices);
+  //printf("get_nth_key index: %d indices %d\n",index,trace->num_indices);
   if (index >= trace->num_indices)
     return FAILURE;
 

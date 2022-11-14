@@ -126,12 +126,14 @@ void debug_out(struct jupiter_network_t* net)
     }
 }
 
-int ecmp(struct jupiter_network_t* net)
+int ecmp(struct jupiter_network_t* net,double * traffic)
 {   
-    printf("ecmp begin\n");
+    //printf("ecmp begin\n");
+    //printf("test\n");
     //while(1);
     net->clear(net);
-    double max_ratio = 0;
+    double max_ratio = 0,tmp_traffic = 100000000.0;
+    *traffic = -1;
     struct Queue* q;
     q = malloc(sizeof(struct Queue));
     QueueInit(q);
@@ -165,13 +167,14 @@ int ecmp(struct jupiter_network_t* net)
         struct jupiter_located_switch_t* temp_sw = net->get_sw(net,pair->src);
         if(temp_sw->dis == 0)
         {
-            printf("test in ecmp -1\n");
+            //debug_out(net);
+            //printf("test in ecmp -2\n");
             return -1;
         }
             
         temp_sw->traffic = pair->demand;
         uint32_t next_links[2000], next_sum = 0;
-        uint8_t visited[500];
+        uint8_t visited[1200];
         memset(visited, 0, sizeof(visited));
         double next_traffic = 0;
         while (!QueueEmpty(q))
@@ -205,11 +208,13 @@ int ecmp(struct jupiter_network_t* net)
                 net->edge_traffic[temp][next_links[i]] += next_traffic;
                 if(max_ratio<(double)net->edge_traffic[next_links[i]][temp] / (double)net->cap[next_links[i]][temp])
                     max_ratio = (double)net->edge_traffic[next_links[i]][temp] / (double)net->cap[next_links[i]][temp];
+                if(tmp_traffic>(double)net->cap[next_links[i]][temp] - (double)net->edge_traffic[next_links[i]][temp])
+                    tmp_traffic = (double)net->cap[next_links[i]][temp] - (double)net->edge_traffic[next_links[i]][temp];
                 if (max_ratio > net->theta)
                 {
                     //debug_out(net);
-                    //printf("maxratio: %lf src: %d dst: %d traffic: %lf capacity: %lf\n", max_ratio, temp, next_links[i], (double)net->edge_traffic[next_links[i]][temp], (double)net->cap[next_links[i]][temp]);
-                    printf("test in ecmp -1\n");
+                    //printf("maxratio: %lf src: %d dst: %d traffic: %lf capacity: %lf theta:%f\n", max_ratio, temp, next_links[i], (double)net->edge_traffic[next_links[i]][temp], (double)net->cap[next_links[i]][temp],net->theta);
+                    //printf("test in ecmp -1\n");
                     //while(1);
                     return -1;
                 }
@@ -218,7 +223,9 @@ int ecmp(struct jupiter_network_t* net)
         }
         //debug_out(net);
     }
-    printf("test in ecmp 1\n");
+    //printf("test in ecmp 1: %f\n",tmp_traffic);
     //while(1);
+    if(traffic!=0)
+        *traffic = tmp_traffic;
     return 1;
 }

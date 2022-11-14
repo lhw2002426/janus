@@ -20,7 +20,7 @@
 struct _rvar_cache_builder_parallel {
   struct traffic_matrix_t **tms;
   uint32_t index;
-  struct expr_t const *expr;
+  struct expr_t *expr;
   struct freelist_repo_t *network_freelist;
   pthread_mutex_t *lock;
 };
@@ -125,8 +125,8 @@ exec_rvar_cache_load_into_array(struct expr_t const *expr, unsigned *count) {
 struct rvar_t **
 exec_rvar_cache_load(struct expr_t const *expr, unsigned *count) {
   struct array_t **arr = exec_rvar_cache_load_into_array(expr, count);
-  printf("test in exec_rvar_cache_load\n");
-  printf("rcache load test\n");
+  //printf("test in exec_rvar_cache_load\n");
+  //printf("rcache load test\n");
   if (!arr) {
     panic("Could not load the rvar cache files: %s", expr->cache.rvar_directory);
     return 0;
@@ -144,7 +144,7 @@ exec_rvar_cache_load(struct expr_t const *expr, unsigned *count) {
   }
 
   free(arr);
-  printf("rcache load end\n");
+  //printf("rcache load end\n");
   return ret;
 }
 
@@ -159,8 +159,10 @@ static rvar_type_t _sim_network_for_trace_parallel(void *data) {
 
   // Get the next traffic matrix
   tm = builder->tms[builder->index];
-  printf("builder index: %d\n",builder->index);
-  printf("tm test: %f",tm->bws[0].bw);
+  //printf("builder index: %d\n",builder->index);
+  //printf("test\n");
+  //printf("%d\n",tm);
+  //printf("tm test: %f",tm->bws[0].bw);
   int violations = 0;
   {
     // Simulate the network
@@ -173,14 +175,16 @@ if(np->net->network_type == NET_JUPITER)
       violations = dataplane_count_violations(&np->dp, builder->expr->promised_throughput);
     }
     else{
-      violations = ecmp(np->net);
+      violations = ecmp(np->net,&(builder->expr->mrc_traffic));
     }
     freelist_return(builder->network_freelist, np);
   }
 
   // Count the violations
-    if(violations<0)
-    return -1;
+  if(violations<0)
+    return -1.0;
+  if(violations == 1)
+    return 1.0;
   rvar_type_t percentage = (rvar_type_t)violations/(rvar_type_t)(tm->num_pairs);
 
   return percentage;
@@ -218,7 +222,7 @@ _exec_net_dp_create(
 
   unsigned nthreads = get_ncores() - 1;
   nthreads  = 1;//danger change
-  printf("nthread: %d\n",nthreads);
+  //printf("nthread: %d\n",nthreads);
   exec->net_dp = freelist_create(nthreads);
   struct _network_dp_t *networks = malloc(sizeof(struct _network_dp_t) * nthreads);
 
@@ -227,7 +231,7 @@ _exec_net_dp_create(
     memset(&networks[i].dp, 0, sizeof(struct dataplane_t));
     freelist_return(exec->net_dp, &networks[i]);
   }
-  printf("exec create test\n");
+  //printf("exec create test\n");
 }
 
 static void __attribute__((unused))
@@ -245,39 +249,40 @@ _exec_net_dp_free(
 rvar_type_t *
 exec_simulate_ordered(
     struct exec_t *exec,
-    struct expr_t const *expr,
+    struct expr_t *expr,
     struct mop_t *mop,
     struct traffic_matrix_t **tms,
     uint32_t trace_length) {
   pthread_mutex_t mut;
   if (pthread_mutex_init(&mut, 0) != 0)
     panic("Couldn't initiate the mutex: %p", &mut);
-  printf("simulate ordered\n");
+  //printf("simulate ordered\n");
+  expr->mrc_traffic = 0;
   if (!exec->net_dp)
     _exec_net_dp_create(exec, expr);
   
-  printf("simulate! trace lenth: %d\n",trace_length);
-
+  //printf("simulate! trace lenth: %d\n",trace_length);
+  
   uint32_t nthreads = freelist_size(exec->net_dp);
   nthreads = 1;//lhw change
   struct freelist_repo_t *repo = exec->net_dp;
   struct _network_dp_t **networks = malloc(sizeof(struct _network_dp_t *) * nthreads);
-
+  
   /* Build a list of available networks */
   for (uint32_t i = 0; i < nthreads; ++i) { 
     networks[i] = freelist_get(repo);
   }
-
+  
   for (uint32_t i = 0; i < nthreads; ++i) { 
     freelist_return(repo, networks[i]);
   }
-
+  
   /* Apply the mop on the network */
   for (uint32_t j = 0; j < nthreads; ++j) {
     mop->pre(mop, networks[j]->net);
   }
   //info("nthread: %d",nthreads);
-
+  
   /* Fill out the data structure for parallel execution */
   struct _rvar_cache_builder_parallel *data = 
     malloc(sizeof(struct _rvar_cache_builder_parallel) * trace_length);
@@ -294,7 +299,7 @@ exec_simulate_ordered(
       _sim_network_for_trace_parallel, 
       data, trace_length,
       sizeof(struct _rvar_cache_builder_parallel), 0);
-
+  
   for (uint32_t j = 0; j < nthreads; ++j) {
     mop->post(mop, networks[j]->net);
   }
@@ -305,6 +310,7 @@ exec_simulate_ordered(
   }
 
   free(networks);
+  //free(data);
   return vals;
 }
 
@@ -375,7 +381,7 @@ risk_cost_t exec_plan_cost(
     struct exec_t *exec,
     struct expr_t const *expr, struct mop_t **mops,
     uint32_t nmops, trace_time_t start) {
-      printf("exec plan cost\n");
+      //printf("exec plan cost\n");
   if (!exec->net_dp)
     _exec_net_dp_create(exec, expr);
 
@@ -427,7 +433,7 @@ risk_cost_t exec_plan_cost(
         dataplane_free_resources(dp);
       }
       else{
-        violations = ecmp(net);
+        violations = ecmp(net,0);
         if(violations == -1)
           cost = -1;
         subplan_cost = cost_pre;

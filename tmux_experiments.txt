@@ -1,0 +1,60 @@
+valgrind --leak-check=full ./bin/netre  /data/zyh/janus-v5/k_experiments1/circuit_list_toy_ex_update-trace/klotski-fa.ini  -a pug-lookback
+10.17
+v3:toy update no valgrind
+v4:toy update finish
+v5:toy update 1 plans
+==343521== LEAK SUMMARY:                                                     
+==343521==    definitely lost: 23,336,889 bytes in 8,720 blocks                                                                                           
+==343521==    indirectly lost: 977,260 bytes in 13,448 blocks                                                                                             
+==343521==      possibly lost: 23,164,428 bytes in 137 blocks                                                                                             
+==343521==    still reachable: 1,888 bytes in 4 blocks                                                                                                    
+==343521==         suppressed: 0 bytes in 0 blocks                                                                                                        
+==343521== Reachable blocks (those to which a pointer was found) are not shown.                                                                           
+==343521== To see them, rerun with: --leak-check=full --show-leak-kinds=all 
+v6:toy update 5 plans
+==344452== LEAK SUMMARY:
+==344452==    definitely lost: 23,336,969 bytes in 8,722 blocks
+==344452==    indirectly lost: 977,180 bytes in 13,446 blocks
+==344452==      possibly lost: 23,164,428 bytes in 137 blocks
+==344452==    still reachable: 1,888 bytes in 4 blocks
+==344452==         suppressed: 0 bytes in 0 blocks
+==344452== Reachable blocks (those to which a pointer was found) are not shown.
+==344452== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+v7:toy first return
+v8:toy update 10 plans
+
+v11:toy update 1 plans
+v15:toy update 5 plans
+v10:toy update 10 plans
+
+10.18 10:00
+v11:toy update 1 plans
+v3:toy update no valgrind
+v4:toy update finish
+v5:small 1 plans
+v6:small 5 plans
+v7:toy first return
+v8:toy update 10 plans
+
+v15:toy update 5 plans
+v10:toy update 10 plans
+
+10.18 14:09
+v11:toy update 1 plans
+v3:toy update no valgrind
+v4:toy update
+v5:500
+v6:1000
+v7:toy first return
+v8:toy update
+
+v15:toy update 5 plans
+v10:toy update 10 plans
+
+10.19 23.25
+v3:small
+v4:toy update
+v5:500
+v6:1000
+v7:toy first return
+v8:toy update

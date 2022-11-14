@@ -175,7 +175,7 @@ struct thpool_* thpool_init(int num_threads){
 /* Add work to the thread pool */
 int thpool_add_work(thpool_* thpool_p, void (*function_p)(void*), void* arg_p){
   job* newjob;
-
+  
   newjob=(struct job*)malloc(sizeof(struct job));
   if (newjob==NULL){
     err("thpool_add_work(): Could not allocate memory for new job\n");

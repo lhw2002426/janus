@@ -8,7 +8,7 @@
 
 struct jupiter_sw_up_t {
   uint32_t type;
-  unsigned location; unsigned count; unsigned color;
+  unsigned location; unsigned count; unsigned color;unsigned label;
 };
 
 struct jupiter_sw_up_list_t {
@@ -98,6 +98,8 @@ struct expr_t {
   uint32_t num_pods;
   uint32_t num_tors_per_pod;
   uint32_t num_aggs_per_pod;
+  uint32_t label_num;
+  double mrc_traffic;
 
   // Freedom degree for the upgrades
   uint32_t *upgrade_freedom;

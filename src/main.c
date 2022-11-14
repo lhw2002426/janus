@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
   struct expr_t expr = {0};
   config_parse(argv[1], &expr, argc - 1, argv + 1);
   struct exec_t *exec = executor(&expr);
-  printf("going to exec\n");
+  printf("going to exec explan: %d\n",expr.explain);
   if (!expr.explain) {
     printf("going to validate\n");
     exec->validate(exec, &expr);

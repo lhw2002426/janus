@@ -127,7 +127,7 @@ exec_simulate_mlu(
 rvar_type_t *
 exec_simulate_ordered(
     struct exec_t *exec,
-    struct expr_t const *expr,
+    struct expr_t *expr,
     struct mop_t *mop,
     struct traffic_matrix_t **tms,
     uint32_t trace_length);

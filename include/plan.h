@@ -74,7 +74,7 @@ struct jupiter_switch_mop_t {
     struct jupiter_located_switch_t **switches;
     uint32_t nswitches;
     uint32_t ncap;
-    uint32_t drain[500];
+    uint32_t drain[1100];
 };
 
 /* A planner has one interface ... a plan iterator that lets us iterate
@@ -85,7 +85,7 @@ struct jupiter_switch_mop_t {
  * automatically but that takes too much time ... for this paper).
  */
 struct plan_t {
-  struct plan_iterator_t* (*iter) (struct plan_t *);
+  struct plan_iterator_t* (*iter) (struct plan_t *,struct expr_t const *);
 };
 
 /* Iterator that returns an ordered set of mops for a specific step of a plan.

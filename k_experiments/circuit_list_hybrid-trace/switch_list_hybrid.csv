@@ -1,0 +1,37 @@
+Initial Topology,,,,Target Topology,
+Switch Name,Switch Role,,,Switch Name,Switch Role
+eb01.f01,EB,,,eb01.f01,EB
+fa001.uu001.f01,FAUU,,,fa001.uu001.f03,FAUU
+fa001.uu001.f02,FAUU,,,fa001.uu001.f04,FAUU
+fa001.uu002.f01,FAUU,,,fa001.uu002.f03,FAUU
+fa001.uu002.f02,FAUU,,,fa001.uu002.f04,FAUU
+fa002.uu001.f01,FAUU,,,fa002.uu001.f03,FAUU
+fa002.uu001.f02,FAUU,,,fa002.uu001.f04,FAUU
+fa002.uu002.f01,FAUU,,,fa002.uu002.f03,FAUU
+fa002.uu002.f02,FAUU,,,fa002.uu002.f04,FAUU
+fa001.du001.f01,FADU,,,fa001.du001.f03,FADU
+fa001.du001.f02,FADU,,,fa001.du001.f04,FADU
+fa001.du002.f01,FADU,,,fa001.du002.f03,FADU
+fa001.du002.f02,FADU,,,fa001.du002.f04,FADU
+fa002.du001.f01,FADU,,,fa002.du001.f03,FADU
+fa002.du001.f02,FADU,,,fa002.du001.f04,FADU
+fa002.du002.f01,FADU,,,fa002.du002.f03,FADU
+fa002.du002.f02,FADU,,,fa002.du002.f04,FADU
+ssw001.s001.f01,SSW,,,ssw001.s001.f03,SSW
+ssw001.s001.f02,SSW,,,ssw001.s001.f04,SSW
+ssw001.s002.f01,SSW,,,ssw001.s002.f03,SSW
+ssw001.s002.f02,SSW,,,ssw001.s002.f04,SSW
+ssw002.s001.f01,SSW,,,ssw002.s001.f03,SSW
+ssw002.s001.f02,SSW,,,ssw002.s001.f04,SSW
+ssw002.s002.f01,SSW,,,ssw002.s002.f03,SSW
+ssw002.s002.f02,SSW,,,ssw002.s002.f04,SSW
+fsw001.p001.f01,FSW,,,fsw001.p001.f01,FSW
+fsw001.p001.f02,FSW,,,fsw001.p001.f02,FSW
+fsw001.p002.f01,FSW,,,fsw001.p002.f01,FSW
+fsw001.p002.f02,FSW,,,fsw001.p002.f02,FSW
+fsw002.p001.f01,FSW,,,fsw002.p001.f01,FSW
+fsw002.p001.f02,FSW,,,fsw002.p001.f02,FSW
+fsw002.p002.f01,FSW,,,fsw002.p002.f01,FSW
+fsw002.p002.f02,FSW,,,fsw002.p002.f02,FSW
+rsw.f01,RSW,,,rsw.f01,RSW
+rsw.f02,RSW,,,rsw.f02,RSW

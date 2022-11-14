@@ -29,7 +29,7 @@ STD=gnu11
 OPT = -O3
 
 SRC:=$(filter-out src/traffic_compressor.c src/main.c src/test.c, \
-	$(wildcard src/*.c src/*/*.c src/*/*/*.c lib/*/*.c))
+	$(wildcard src/*.c src/*/*.c src/*/*/*.c lib/*/*.c src/algo/nauty.h src/algo/nausparse.h src/algo/nauty.a))
 
 MAIN_SRC:=$(SRC)
 MAIN_SRC+=src/main.c

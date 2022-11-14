@@ -10,6 +10,6 @@
  * input and returns packet-loss/impact?  Still not sure if that's the best
  * model.
  */
-int ecmp(struct jupiter_network_t *);
+int ecmp(struct jupiter_network_t *,double*);
 
 #endif

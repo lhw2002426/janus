@@ -1,0 +1,271 @@
+[5plans]
+
+==3030816== 20 bytes in 2 blocks are definitely lost in loss record 12 of 64      
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x116B22: _sup_plan (in /data/zyh/janus-v5/bin/netre)           
+==3030816==    by 0x11BABF: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==3030816== 72 bytes in 9 blocks are definitely lost in loss record 31 of 64      
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x115D4E: monte_carlo_parallel_ordered_rvar (in /data/zyh/janus-v5/bin/netre)                                                                      
+==3030816==    by 0x10D78D: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3030816==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3030816==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)  
+
+==3030816== 432 (360 direct, 72 indirect) bytes in 9 blocks are definitely lost in loss record 45 of 64                                                              
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x10D74B: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3030816==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3030816==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==3030816== 1,008 (864 direct, 144 indirect) bytes in 9 blocks are definitely lost in loss record 53 of 64                                                           
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x112427: _sample_to_bucket (in /data/zyh/janus-v5/bin/netre)                                                                                      
+==3030816==    by 0x119D06: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3030816==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre) 
+
+==3030816== 1,680 bytes in 1 blocks are possibly lost in loss record 54 of 64                                                                                        
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x118CA0: klotski_network_create (in /data/zyh/janus-v5/bin/netre)                                                                                 
+==3030816==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3030816==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3030816==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==3030816== 4,900 bytes in 35 blocks are possibly lost in loss record 56 of 64                                                                                       
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x11740E: _klotski_switch_init (in /data/zyh/janus-v5/bin/netre)                                                                                   
+==3030816==    by 0x118CCB: klotski_network_create (in /data/zyh/janus-v5/bin/netre)                                                                                 
+==3030816==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3030816==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3030816==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre) 
+
+==3030816== 23,089,432 bytes in 1 blocks are possibly lost in loss record 63 of 64                                                                                   
+==3030816==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3030816==    by 0x118C1F: klotski_network_create (in /data/zyh/janus-v5/bin/netre)                                                                                 
+==3030816==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3030816==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3030816==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3030816==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3030816==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)  
+
+[10 plans]
+
+==3001514== 52 bytes in 6 blocks are definitely lost in loss record 26 of 64      
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x116B22: _sup_plan (in /data/zyh/janus-v5/bin/netre)           
+==3001514==    by 0x11BABF: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==3001514== 72 bytes in 9 blocks are definitely lost in loss record 31 of 64      
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x115D4E: monte_carlo_parallel_ordered_rvar (in /data/zyh/janus-v5/bin/netre)                                                                      
+==3001514==    by 0x10D78D: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3001514==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3001514==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)  
+
+==3001514== 432 (360 direct, 72 indirect) bytes in 9 blocks are definitely lost in loss record 45 of 64                                                              
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x10D74B: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3001514==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3001514==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre) 
+
+==3001514== 1,008 (864 direct, 144 indirect) bytes in 9 blocks are definitely lost in loss record 53 of 64                                                           
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x112427: _sample_to_bucket (in /data/zyh/janus-v5/bin/netre)                                                                                      
+==3001514==    by 0x119D06: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3001514==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)   
+
+==3001514== 1,680 bytes in 1 blocks are possibly lost in loss record 54 of 64                                                                                        
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x118CA0: klotski_network_create (in /data/zyh/janus-v5/bin/netre)                                                                                 
+==3001514==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3001514==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3001514==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)  
+
+==3001514== 4,900 bytes in 35 blocks are possibly lost in loss record 56 of 64                                                                                       
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x11740E: _klotski_switch_init (in /data/zyh/janus-v5/bin/netre)                                                                                   
+==3001514==    by 0x118CCB: klotski_network_create (in /data/zyh/janus-v5/bin/netre)                                                                                 
+==3001514==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3001514==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3001514==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre) 
+
+==3001514== 23,089,432 bytes in 1 blocks are possibly lost in loss record 63 of 64                                                                                   
+==3001514==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                        
+==3001514==    by 0x118C1F: klotski_network_create (in /data/zyh/janus-v5/bin/netre)                                                                                 
+==3001514==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                  
+==3001514==    by 0x119C35: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)                                                                       
+==3001514==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)          
+==3001514==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)                                                                                     
+==3001514==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+1plan
+==343521== 6,288 bytes in 1 blocks are possibly lost in loss record 48 of 66
+==343521==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==343521==    by 0x118CB0: klotski_network_create (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==343521==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==343521== 8,712 bytes in 1,089 blocks are definitely lost in loss record 51 of 66 
+==343521==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==343521==    by 0x115D4E: monte_carlo_parallel_ordered_rvar (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10D78D: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==343521==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==343521== 52,752 (43,480 direct, 9,272 indirect) bytes in 1,087 blocks are definitely lost in loss record 55 of 66
+==343521==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==343521==    by 0x10D74B: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==343521==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==343521== 68,644 bytes in 131 blocks are possibly lost in loss record 56 of 66
+==343521==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==343521==    by 0x11741E: _klotski_switch_init (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x118CDB: klotski_network_create (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==343521==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==343521== 121,856 (104,448 direct, 17,408 indirect) bytes in 1,088 blocks are definitely lost in loss record 59 of 66
+==343521==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==343521==    by 0x112427: _sample_to_bucket (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x119D16: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==343521== 23,089,432 bytes in 1 blocks are possibly lost in loss record 65 of 66
+==343521==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==343521==    by 0x118C2F: klotski_network_create (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==343521==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+
+5plans
+==344452== 6,288 bytes in 1 blocks are possibly lost in loss record 47 of 65
+==344452==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==344452==    by 0x118CB0: klotski_network_create (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==344452==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==344452== 8,712 bytes in 1,089 blocks are definitely lost in loss record 50 of 65 
+==344452==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==344452==    by 0x115D4E: monte_carlo_parallel_ordered_rvar (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10D78D: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==344452==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==344452== 52,576 (43,560 direct, 9,016 indirect) bytes in 1,089 blocks are definitely lost in loss record 54 of 65
+==344452==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==344452==    by 0x10D74B: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==344452==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==344452== 68,644 bytes in 131 blocks are possibly lost in loss record 55 of 65
+==344452==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==344452==    by 0x11741E: _klotski_switch_init (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x118CDB: klotski_network_create (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==344452==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==344452== 121,840 (104,448 direct, 17,392 indirect) bytes in 1,088 blocks are definitely lost in loss record 58 of 65
+==344452==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==344452==    by 0x112427: _sample_to_bucket (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x119D16: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+==344452== 23,089,432 bytes in 1 blocks are possibly lost in loss record 64 of 65
+==344452==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==344452==    by 0x118C2F: klotski_network_create (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10BE49: expr_clone_network (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10D832: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre) 
+==344452==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x11BFEC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==344452==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+
+many plans
+==341386== 52,272 (43,520 direct, 8,752 indirect) bytes in 1,088 blocks are definitely lost in loss record 57 of 67                                                  
+==341386==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)                                                         
+==341386==    by 0x10D74B: exec_simulate_ordered (in /data/zyh/janus-v5/bin/netre)                                                                                   
+==341386==    by 0x119C45: _short_term_risk_using_predictor (in /data/zyh/janus-v5/bin/netre)
+==341386==    by 0x11BECD: _plans_get (in /data/zyh/janus-v5/bin/netre)
+==341386==    by 0x11BFDC: _exec_pug_validate (in /data/zyh/janus-v5/bin/netre)
+==341386==    by 0x10A845: main (in /data/zyh/janus-v5/bin/netre)
+
+
+
+
+

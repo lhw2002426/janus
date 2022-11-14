@@ -45,11 +45,12 @@ struct jupiter_network_t {
       //klotski varible
   uint32_t num_switches;
   float alpha,theta;
-  uint8_t used[500];
-  double edge_traffic[501][501], cap[501][501];
+  int flag;
+  uint8_t used[1200];
+  double edge_traffic[1201][1201], cap[1201][1201];
   struct jupiter_located_switch_t* klotski_switches;
   uint32_t pair_num;
-  struct pair_t* pairs[500];
+  struct pair_t* pairs[1200];
     //char end[];
   void (*klotski_net_init)(struct jupiter_network_t*, uint32_t);
   void (*clear)(struct jupiter_network_t*);
@@ -78,7 +79,7 @@ jupiter_network_create(
     bw_t link_bw);
 
 struct klotski_network_t*
-    klotski_network_create(const char* path1, const char* path2, uint32_t nswitch, uint32_t nedge,float alpha,float theta) ;
+    klotski_network_create(const char* path1, const char* path2, uint32_t nswitch, uint32_t nedge,float alpha,float theta,int flag) ;
 
 
 /* Setup a traffic matrix on the jupiter topology.  Mainly used for dataplane creation */

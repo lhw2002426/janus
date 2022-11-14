@@ -1,3 +1,10 @@
+janus-v5由janus-v3基础上改进，尝试找到想要的改动方式
+brach my-search使用了label标记对称的subplan，不仅risk的估计中使用，后续组成plan的时候也考虑subplan的等价性
+MRC实现了论文中的另一个baselineMRC
+automorphism 使用nauty接口判断等价性
+
+使用k_experiments中的klotski_ezperiments来进行janus的比较实验
+
 # Janus: A Risk Based Planner for Data Centers
 
 Janus is a repository of planners together with a network risk emulator for

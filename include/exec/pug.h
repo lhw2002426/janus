@@ -114,6 +114,8 @@ struct plan_repo_t {
   unsigned max_plan_size;       /* Max length of a plan in this repository---this is equivalent to the deadline? */
   unsigned plan_size_in_bytes;  /* Length of the plan in bytes, i.e., max_plan_size * sizeof(unsigned) */
   unsigned cap;                 /* Capacity of the planner, i.e., how many plans it can hold */
+  unsigned best_plan_len;
+  float    best_cost;
 
   /* Internal variables for working with subplans */
   unsigned _cur_index;          /* Index of last subplan "invalidated" in the

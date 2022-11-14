@@ -75,9 +75,10 @@ void _npart_begin(struct group_iter_t *s) {
   out->state_length = 0;
   out->last_allowed = 1;
   out->finished = 0;
-
+  //printf("test in npart begin\n");
   // Initiate the first state
   out->next((struct group_iter_t *)out);
+  //printf("end npart begin\n");
 }
 
 void _npart_free(struct group_iter_t *in) {
@@ -202,7 +203,7 @@ struct group_iter_t *npart_create(uint32_t n) {
   out->num_subsets = _npart_state_num_subsets;
 
   out->tuple_size = 1;
-
+  //printf("test in npart create\n");
   _npart_begin((struct group_iter_t *)out);
 
   return (struct group_iter_t *)out;
@@ -434,7 +435,12 @@ void _prepare_comps(struct dual_npart_iter_state_t *s) {
 
   size_t size1 = (s->iter1->total+2) * sizeof(uint32_t);
   size_t size2 = (s->iter2->total+2) * sizeof(uint32_t);
-
+  if(size1<0||size2<0)
+  {
+    printf("to many plans\n");
+    exit(-1);
+  }
+  //printf("iter1 total:%d size1: %d size2: %d s1l: %d\n",s->iter1->total,size1,size2,s1l);
   memset(s->comp1, 0, size1);
   memset(s->avail, 0, size2);
   memset(s->min_class_index, 0, size1);
@@ -445,7 +451,7 @@ void _prepare_comps(struct dual_npart_iter_state_t *s) {
   s->avail_len = 0;
   s->last_index = 0;
   s->last_class = 0;
-
+  //printf("test in prepare comps\n");
   for (uint32_t i = 0; i < s1l; ++i) {
     s->comp1[s1[i]] += 1;
     s->comp1_len = MAX(s->comp1_len, s1[i]);
@@ -458,7 +464,7 @@ void _prepare_comps(struct dual_npart_iter_state_t *s) {
 
   s->comp1_len += 1;
   s->avail_len += 1;
-
+  
   _setup_for_next_iter(s);
 }
 
@@ -524,11 +530,15 @@ void _dual_npart_state_begin(
     (struct dual_npart_iter_state_t *)in;
 
   iter->iter1->begin(iter->iter1);
+  //printf("iter1 begin\n");
   iter->iter2->begin(iter->iter2);
+  //printf("iter2 begin\n");
   iter->finished = 0;
 
   _prepare_comps(iter);
+  //printf("prepare comps\n");
   _dual_npart_state_build(iter);
+  //printf("end dual part begin\n");
 }
 
 static inline
@@ -637,8 +647,8 @@ struct group_iter_t *dual_npart_create(
   iter->to_tuple = _dual_npart_state_to_tuple;
   iter->from_tuple = _dual_npart_state_from_tuple;
   iter->num_subsets = _dual_npart_state_num_subsets;
-
+  
   _dual_npart_state_begin((struct group_iter_t *)iter);
-
+  //printf("test in duel part create\n");
   return (struct group_iter_t *)iter;
 }

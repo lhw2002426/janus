@@ -49,9 +49,21 @@ option as of the moment is `jupiter`.  It follows the following format:
 topology with 4 cores, 6 pods, 8 aggs per pod, 10 tors per pod, and a link
 capacity of 10Gbpi, we would use: `jupiter-4-6-8-10-10000000000`.
 
+now we made it to support other network `klotski`,which is the DNC network in
+the Klotski: Efficient and Safe Migration of Large Production Datacenter Networks
+with the format `klotski-#add1-#add2&&n|m|alpha|theta|mode` in which add1 is the 
+address of switch info, add2 is the address of topo info, n is the switch num,
+m is edge num,alpha is the cost of update same type of switch ,theta is the max ratio
+of traffic/capacity the meaning of the mode is:
+0:the origin janus algorithm used for klotski
+1:the janus algorithm used for klotski with search improved
+2:the MRC algorithem used for klotski
+3:the janus algorithm used for klotski with search improved and label config(see the last section)
+for example 
+`klotski-k_experiments1/circuit_list_small-trace/switch_list_small.csv&&k_experiments1/circuit_list_small-trace/circuit_list_small.csv&&35|80|0|0.75|1` is a leagel config
+
 Gpbi is the number of bits that a link can pass per traffic matrix interval, as
 discussed in the previous attribute (mop-duration).
-两次实验中间可以传递的流量？
 
 ## [failure]
 `concurrent-switch-failure`: Maximum number of concurrent switch failures to
@@ -150,6 +162,9 @@ switch-group = pod/agg-5-8-1
 switch-group = pod/agg-6-8-1
 switch-group = pod/agg-7-8-1
 `
+
+in klotski if the mode is 3,we can set the `label`.if the switched label is same,it means they 
+will be considered as same type of switch when we count the cost 
 
 `freedom`: Freedom is the granularity of planning for each superblock.  So a
 freedom group of `8-4` means that we can use upto 8 steps to upgrade the first
